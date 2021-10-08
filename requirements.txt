@@ -1,0 +1,5 @@
+google-cloud-storage
+np
+pandas
+##requests
+wfdb=3.4.1
