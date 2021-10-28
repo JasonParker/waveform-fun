@@ -78,3 +78,26 @@ def calc_map(sys, dias):
     indices = np.mean([sidx, didx], axis=0)
     
     return indices, maps
+
+def format_df(df, record, t0):
+    """ Format df
+    """
+    df["time"] = df.index * 0.008 # from 8 ms to 1 s
+    df["ts"] = df["time"].apply(lambda x: record["waveform_record"]["base_datetime"] \
+                                + datetime.timedelta(seconds=x))
+
+    df["age"] = record["raw_data"]["Age"]
+    df["sex"] = record["raw_data"]["Sex"]
+    df["clinical"] = record["raw_data"]["Clinical"]
+
+    surrogate = t0[record["raw_data"]["Wave"]]
+    df["before_t0"] = df["ts"].apply(lambda x: x < surrogate)
+
+    #name = df["clinical"]
+    #if not os.path.isdir("data/mimic2db"):
+    #    os.mkdir("data/mimic2db")
+    #fs.get(f'{bucket_name}/mimic2cdb/{name}/{name}.txt', f'data/mimic2db/{name}/{name}.txt')
+
+    #clinical = parse_txt(f"data/mimic2db/{name}/{name}.txt")
+
+    return df
