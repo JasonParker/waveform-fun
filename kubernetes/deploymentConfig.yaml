@@ -109,7 +109,7 @@ apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
   labels:
-    app: testing
+    app: waveform-fun
     responsible-party: evh6671
   managedFields:
     - apiVersion: autoscaling/v2beta1
