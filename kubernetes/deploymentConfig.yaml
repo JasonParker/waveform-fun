@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: testing
+    app: waveform-fun
     responsible-party: evh6671
   managedFields:
     - apiVersion: apps/v1
@@ -32,7 +32,7 @@ metadata:
                 'f:responsible-party': {}
             'f:spec':
               'f:containers':
-                'k:{"name":"myimage-sha256-1"}':
+                'k:{"name":"waveform-fun-sha256-1"}':
                   .: {}
                   'f:image': {}
                   'f:imagePullPolicy': {}
@@ -87,7 +87,7 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: testing
+      app: waveform-fun
       responsible-party: evh6671
   strategy:
     rollingUpdate:
@@ -97,13 +97,13 @@ spec:
   template:
     metadata:
       labels:
-        app: testing
+        app: waveform-fun
         responsible-party: evh6671
     spec:
       containers:
         - image: gcr.io/qwiklabs-gcp-04-133e595cc3fe/github_jasonparker_waveform-fun
           imagePullPolicy: IfNotPresent
-          name: myimage-sha256-1
+          name: waveform-fun-sha256-1
 ---
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
