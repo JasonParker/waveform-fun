@@ -1,6 +1,7 @@
 google-cloud-storage
 np
 pandas
-##requests
+requests
+schedule
 scikit-learn==1.0
 wfdb==3.4.1
