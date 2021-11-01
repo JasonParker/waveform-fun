@@ -87,7 +87,7 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: waveform-fun
+      app: testing
       responsible-party: evh6671
   strategy:
     rollingUpdate:
@@ -97,7 +97,7 @@ spec:
   template:
     metadata:
       labels:
-        app: waveform-fun
+        app: testing
         responsible-party: evh6671
     spec:
       containers:
