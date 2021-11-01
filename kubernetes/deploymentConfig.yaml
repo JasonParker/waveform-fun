@@ -1,159 +1,62 @@
-apiVersion: apps/v1
-kind: Deployment
+---
+apiVersion: "v1"
+kind: "ConfigMap"
 metadata:
+  name: "waveform-fun-config-j1nx"
+  namespace: "default"
   labels:
-    app: waveform-fun
-    responsible-party: evh6671
-  managedFields:
-    - apiVersion: apps/v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:labels':
-            .: {}
-            'f:app': {}
-            'f:responsible-party': {}
-        'f:spec':
-          'f:progressDeadlineSeconds': {}
-          'f:replicas': {}
-          'f:revisionHistoryLimit': {}
-          'f:selector': {}
-          'f:strategy':
-            'f:rollingUpdate':
-              .: {}
-              'f:maxSurge': {}
-              'f:maxUnavailable': {}
-            'f:type': {}
-          'f:template':
-            'f:metadata':
-              'f:labels':
-                .: {}
-                'f:app': {}
-                'f:responsible-party': {}
-            'f:spec':
-              'f:containers':
-                'k:{"name":"waveform-fun-sha256-1"}':
-                  .: {}
-                  'f:image': {}
-                  'f:imagePullPolicy': {}
-                  'f:name': {}
-                  'f:resources': {}
-                  'f:terminationMessagePath': {}
-                  'f:terminationMessagePolicy': {}
-              'f:dnsPolicy': {}
-              'f:restartPolicy': {}
-              'f:schedulerName': {}
-              'f:securityContext': {}
-              'f:terminationGracePeriodSeconds': {}
-      manager: GoogleCloudConsole
-      operation: Update
-      time: '2021-11-01T19:43:04Z'
-    - apiVersion: apps/v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:annotations':
-            .: {}
-            'f:deployment.kubernetes.io/revision': {}
-        'f:status':
-          'f:conditions':
-            .: {}
-            'k:{"type":"Available"}':
-              .: {}
-              'f:lastTransitionTime': {}
-              'f:lastUpdateTime': {}
-              'f:message': {}
-              'f:reason': {}
-              'f:status': {}
-              'f:type': {}
-            'k:{"type":"Progressing"}':
-              .: {}
-              'f:lastTransitionTime': {}
-              'f:lastUpdateTime': {}
-              'f:message': {}
-              'f:reason': {}
-              'f:status': {}
-              'f:type': {}
-          'f:observedGeneration': {}
-          'f:replicas': {}
-          'f:unavailableReplicas': {}
-          'f:updatedReplicas': {}
-      manager: kube-controller-manager
-      operation: Update
-      time: '2021-11-01T21:06:10Z'
-  name: testing
-  namespace: default
+    app: "waveform-fun"
+    responsible-party: "jtp"
+data:
+  NAME: "Jason"
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "waveform-fun"
+  namespace: "default"
+  labels:
+    app: "waveform-fun"
+    responsible-party: "jtp"
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: testing
-      responsible-party: evh6671
-  strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
+      app: "waveform-fun"
+      responsible-party: "jtp"
   template:
     metadata:
       labels:
-        app: testing
-        responsible-party: evh6671
+        app: "waveform-fun"
+        responsible-party: "jtp"
     spec:
       containers:
-        - image: gcr.io/qwiklabs-gcp-04-133e595cc3fe/github_jasonparker_waveform-fun
-          imagePullPolicy: IfNotPresent
-          name: waveform-fun-sha256-1
+      - name: "waveform-fun-sha256-1"
+        image: "gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun@sha256:5269b756af595e1514a0d547fa6e42a817912713de6b085d85f1246a913d4624"
+        env:
+        - name: "NAME"
+          valueFrom:
+            configMapKeyRef:
+              key: "NAME"
+              name: "waveform-fun-config-j1nx"
 ---
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
+apiVersion: "autoscaling/v2beta1"
+kind: "HorizontalPodAutoscaler"
 metadata:
+  name: "waveform-fun-hpa-nfcx"
+  namespace: "default"
   labels:
-    app: waveform-fun
-    responsible-party: evh6671
-  managedFields:
-    - apiVersion: autoscaling/v2beta1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:labels':
-            .: {}
-            'f:app': {}
-            'f:responsible-party': {}
-        'f:spec':
-          'f:maxReplicas': {}
-          'f:metrics': {}
-          'f:minReplicas': {}
-          'f:scaleTargetRef':
-            'f:apiVersion': {}
-            'f:kind': {}
-            'f:name': {}
-      manager: GoogleCloudConsole
-      operation: Update
-      time: '2021-11-01T19:43:05Z'
-    - apiVersion: autoscaling/v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:annotations':
-            .: {}
-            'f:autoscaling.alpha.kubernetes.io/conditions': {}
-        'f:status':
-          'f:currentReplicas': {}
-      manager: vpa-recommender
-      operation: Update
-      time: '2021-11-01T19:43:21Z'
-  name: testing-hpa-jci5
-  namespace: default
+    app: "waveform-fun"
+    responsible-party: "jtp"
 spec:
+  scaleTargetRef:
+    kind: "Deployment"
+    name: "waveform-fun"
+    apiVersion: "apps/v1"
+  minReplicas: 1
   maxReplicas: 5
   metrics:
-    - resource:
-        name: cpu
-        targetAverageUtilization: 80
-      type: Resource
-  minReplicas: 1
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: testing
+  - type: "Resource"
+    resource:
+      name: "cpu"
+      targetAverageUtilization: 80
