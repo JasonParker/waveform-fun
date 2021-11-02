@@ -6,6 +6,7 @@ import os
 from data.gcp_pull_waveform_data import fetch_settings, generate_record_map, generate_waveform_dataset
 from utils.get_labels import get_training_labels, get_t0
 from data.bp_features import avg_bp, clean_bp_summary
+from retrieve_train_wf import upload_blob
 
 def load_data(pull_local=True):
     """Load data from GCP"""
@@ -71,7 +72,15 @@ def combine_dataset():
 
     total_df.to_csv("data/processed/processed_all.csv")
 
+def push_to_bucket():
+    """Push combined dataset to GCP bucket"""
+    bucket_name = 'physionet_2009'
+    source_path = os.path.join("data/processed", "processed_all.csv")
+    destination = os.path.join("processed", "processed_all.csv")
+    upload_blob(bucket_name, source_path, destination)
+
 if __name__ == "__main__":
     #x = load_data(pull_local=True)
     #total_df = add_features()
-    combine_dataset()
+    #combine_dataset()
+    push_to_bucket()
