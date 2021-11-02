@@ -27,7 +27,7 @@ def add_features():
     training = get_training_labels()
     record_map = generate_record_map(bucket_name, fs, training)
     #for i, rec in enumerate(list(x.values())):
-    for i, e in enumerate(record_map['waveform_entities'][0:15]):
+    for i, e in enumerate(record_map['waveform_entities'][0:2]):
         rec = generate_waveform_dataset(e, record_map, bucket_name)
         if isinstance(rec, type(None)):
             print("No data found")
@@ -40,7 +40,7 @@ def add_features():
         df = pd.DataFrame(rec, columns=["wave", "time", "ts", "ABP"])
         df = df[~df['ABP'].isna()]
         wave = df["wave"].values[0]
-        if os.path.isfile(f"data/processed/data_{wave}.csv"):
+        if os.path.isfile(f"data/processed/data_{wave}.json"):
             continue
         #try:
         new_df = avg_bp(df, time_chunk=60)
@@ -55,7 +55,8 @@ def add_features():
         #else:
         #    total_df = total_df.append(clean_df)
 
-        clean_df.to_csv(f"data/processed/data_{wave}.csv")
+        #clean_df.to_csv(f"data/processed/data_{wave}.csv")
+        clean_df.to_json(f"data/processed/data_{wave}.json")
 
     return clean_df
 
@@ -63,24 +64,24 @@ def combine_dataset():
     """Combine CSV files for individual patients into single CSV file"""
     files = os.listdir("data/processed/")
     for idx, fil in enumerate(files):
-        if fil.split(".")[-1] == "csv":
+        if fil.split(".")[-1] == "json":
             df = pd.read_csv(f"data/processed/{fil}")
         if idx == 0:
             total_df = df
         else:
             total_df = total_df.append(df)
 
-    total_df.to_csv("data/processed/processed_all.csv")
+    total_df.to_csv("data/processed/processed_all.json")
 
 def push_to_bucket():
     """Push combined dataset to GCP bucket"""
     bucket_name = 'physionet_2009'
-    source_path = os.path.join("data/processed", "processed_all.csv")
-    destination = os.path.join("processed", "processed_all.csv")
+    source_path = os.path.join("data/processed", "processed_all.json")
+    destination = os.path.join("processed", "processed_all.json")
     upload_blob(bucket_name, source_path, destination)
 
 if __name__ == "__main__":
     #x = load_data(pull_local=True)
-    #total_df = add_features()
+    total_df = add_features()
     #combine_dataset()
-    push_to_bucket()
+    #push_to_bucket()
