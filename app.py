@@ -13,5 +13,5 @@ def home_page():
 if __name__ == "__main__":
     application.run(
         threaded=True,
-        host=os.environ['HOST'],
-        port=int(os.environ['PORT']))
+        host='0.0.0.0',
+        port=8080)
