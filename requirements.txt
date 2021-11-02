@@ -1,4 +1,5 @@
 google-cloud-storage
+gunicorn
 np
 pandas
 requests
