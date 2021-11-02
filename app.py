@@ -1,15 +1,4 @@
-import os
-import mod_wsgi.server
+from server import application
 
-mod_wsgi.server.start(
-    '--log-to-terminal',
-    '--port', os.environ['PORT'] or '8080',
-    '--request-timeout', '1800',
-    '--trust-proxy-header', 'X-Forwarded-For',
-    '--trust-proxy-header', 'X-Forwarded-Port',
-    '--trust-proxy-header', 'X-Forwarded-Proto',
-    '--processes', os.environ.get('MOD_WSGI_PROCESSES', '1'),
-    '--threads', os.environ.get('MOD_WSGI_THREADS', '5'),
-    '--application-type', 'module',
-    '--entry-point', 'server'
-)
+if name == "main":
+    application.run()

@@ -11,4 +11,4 @@ def home_page():
 
 
 if __name__ == "__main__":
-    application.run()
+    application.run(threaded=True, port=8080)
