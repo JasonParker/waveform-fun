@@ -5,7 +5,7 @@ import os
 
 from data.gcp_pull_waveform_data import fetch_settings, generate_record_map, generate_waveform_dataset
 from utils.get_labels import get_training_labels, get_t0
-from data.bp_features import avg_bp, clean_bp_summary
+from data.bp_features import avg_bp, clean_bp_summary, create_lookback
 from retrieve_train_wf import upload_blob
 
 def load_data(pull_local=True):
@@ -40,13 +40,14 @@ def add_features():
         df = pd.DataFrame(rec, columns=["wave", "time", "ts", "ABP"])
         df = df[~df['ABP'].isna()]
         wave = df["wave"].values[0]
-        if os.path.isfile(f"data/processed/data_{wave}.json"):
-            continue
+        #if os.path.isfile(f"data/processed/data_{wave}.json"):
+        #    continue
         #try:
         new_df = avg_bp(df, time_chunk=60)
         if isinstance(new_df, type(None)):
             continue
-        clean_df = clean_bp_summary(new_df)
+        lb_df = create_lookback(new_df)
+        clean_df = clean_bp_summary(lb_df)
         #except:
         #    print("failed")
         #    continue

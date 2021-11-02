@@ -129,7 +129,7 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
         try:
             cur_row = pd.DataFrame(data = {'wave': [df["wave"].values[0]], 'start_window':[cur_window-time_chunk],'start_window_time':[df_sub.loc[cur_window-time_chunk,'ts']],
                                        'end_window':[cur_window], 'end_window_time':[df_sub.loc[cur_window,'ts']],
-                                       'avg_sys':[avg_sys], 'avg_dias':[avg_dias], 'avg_map':[avg_maps],'all_values':[all_values]})
+                                       'avg_sys':[avg_sys], 'avg_dias':[avg_dias], 'avg_map':[avg_maps],'all_values': [all_values]})
         except KeyError:
             continue
         #print(cur_row)
@@ -153,3 +153,26 @@ def clean_bp_summary(df):
     new_df = df[good_sys & good_dias & has_outcome]
     
     return new_df
+
+def create_lookback(df, time=1):
+    """Create lookback windows for each row
+    time is in minutes
+    """
+    time_diff = df.iloc[1].start_window_time - df.iloc[0].start_window_time
+    time_diff = time_diff.seconds / 60 # Conversion from s to min.
+    if time_diff > time:
+        raise ValueError("Lookback window time must be greater or equal to the time windows")
+    n_skips = time / time_diff  # Example: lookback is 10 minutes, window of 5: 10 / 5 = look back two windows
+
+    lb_array = np.zeros(df.shape[0])
+    for index, row in df.iterrows():
+        lb_idx = int(index - n_skips)
+        if lb_idx < min(df.index):
+            lb_array[index] = None
+        else:
+            lookback = df.iloc[lb_idx]
+            lb_array[index] = lookback["avg_map"]
+
+    df[f"lb_{time}_map"] = lb_array
+
+    return df
