@@ -115,7 +115,7 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
     end_window = x.index[-1]
     time_window = (time_window * 1000) // 8
     time_chunk = (time_chunk * 1000) // 8
-    new_df = pd.DataFrame(columns = ['start_window', 'end_window', 'avg_sys','avg_dias','avg_map', 'all_values'])
+    new_df = pd.DataFrame(columns = ['wave', 'start_window', 'end_window', 'avg_sys','avg_dias','avg_map', 'all_values'])
     for cur_window in range(start_window + time_chunk, end_window, time_window):
         df_sub = df.loc[cur_window-time_chunk:cur_window,:]
         x_sub = x.loc[cur_window-time_chunk:cur_window]
@@ -126,14 +126,17 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
         avg_maps = (avg_sys + 2 * (avg_dias))/3
         #print(df_sub.loc[cur_window-time_chunk,'ts'])
         all_values = x_sub[waveform_type].to_numpy()
-        cur_row = pd.DataFrame(data = {'start_window':[cur_window-time_chunk],'start_window_time':[df_sub.loc[cur_window-time_chunk,'ts']],
+        try:
+            cur_row = pd.DataFrame(data = {'wave': [df["wave"].values[0]], 'start_window':[cur_window-time_chunk],'start_window_time':[df_sub.loc[cur_window-time_chunk,'ts']],
                                        'end_window':[cur_window], 'end_window_time':[df_sub.loc[cur_window,'ts']],
                                        'avg_sys':[avg_sys], 'avg_dias':[avg_dias], 'avg_map':[avg_maps],'all_values':[all_values]})
+        except KeyError:
+            continue
         #print(cur_row)
         new_df = new_df.append(cur_row)
     new_df.sort_values('start_window')
     new_df = new_df.reset_index()
-    new_df = new_df[['start_window', 'end_window','start_window_time','end_window_time',
+    new_df = new_df[['wave', 'start_window', 'end_window','start_window_time','end_window_time',
                      'avg_sys', 'avg_dias','avg_map','all_values']]
     new_df['current_hypotensive'] = np.where(new_df['avg_map'] <= 65, 1,0)
     new_df['hypotensive_in_15'] = new_df['current_hypotensive'].shift(periods=-15)
