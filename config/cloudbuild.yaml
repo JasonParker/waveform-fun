@@ -3,11 +3,12 @@ steps:
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/waveform-fun', '.']
 # Docker push to Google Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push',  'us-central1-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/myimage:$SHORT_SHA']
+  args: ['push',  'us-central1-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/waveform-fun:$SHORT_SHA']
 # Deploy to Cloud Run
 - name: google/cloud-sdk
-  args: ['gcloud', 'run', 'deploy', 'helloworld', 
-         '--image=us-central1-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/myimage:$SHORT_SHA', 
+  args: ['gcloud', 'run', 'deploy', 'home_page', 
+         '--image=us-central1-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/waveform-fun:$SHORT_SHA', 
          '--region', 'us-central1', '--platform', 'managed', 
          '--allow-unauthenticated']
 images: ['gcr.io/$PROJECT_ID/waveform-fun']
+
