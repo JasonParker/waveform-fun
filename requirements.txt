@@ -1,6 +1,6 @@
 Flask
 google-cloud-storage
-gunicorn
+#gunicorn
 np
 pandas
 requests
