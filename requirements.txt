@@ -3,4 +3,4 @@ np
 pandas
 ##requests
 scikit-learn==1.0
-wfdb=3.4.1
+wfdb==3.4.1

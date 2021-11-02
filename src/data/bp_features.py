@@ -79,6 +79,15 @@ def calc_map(sys, dias):
     
     return indices, maps
 
+def clean_bp_summary(df):
+    good_sys = df['avg_sys'] >= 30
+    good_dias = df['avg_dias'] >= 10
+    has_outcome = df['hypotensive_in_15'].notnull()
+    
+    df['include_in_model'] = np.where(good_sys & good_dias & has_outcome, 1, 0)
+    
+    return df
+
 
 def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
     """ Get diastolic blood pressures for a abp waveform
@@ -145,14 +154,19 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
     except KeyError:
         return None
 
-def clean_bp_summary(df):
-    good_sys = df['avg_sys'] >= 30
-    good_dias = df['avg_dias'] >= 10
-    has_outcome = df['hypotensive_in_15'].notnull()
+  
+
+def merge_df(e_in,e_out, df_in, df_out):
+    if e_in != e_out:
+        print(f'mismatch ids {e_in} - {e_out}')
+    else:
+        e = e_in
     
-    new_df = df[good_sys & good_dias & has_outcome]
+    final_df = df_out.merge(right = df_in, on = 'start_window', suffixes = ['_outputs','_inputs'])
+    final_df['waveform_id'] = e
     
-    return new_df
+    return final_df
+
 
 def create_lookback(df, time=1):
     """Create lookback windows for each row
