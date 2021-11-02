@@ -14,4 +14,4 @@ if __name__ == "__main__":
     application.run(
         threaded=True,
         host=os.environ['HOST'],
-        port=os.environ['PORT'])
+        port=int(os.environ['PORT']))
