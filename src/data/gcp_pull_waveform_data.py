@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import wfdb
 import datetime
-
+from google.cloud import storage
+from utils.get_blobs import get_blob
 
 
 def fetch_settings():
@@ -23,7 +24,7 @@ def generate_record_map(bucket, fs, training_set):
         names = ['Clinical', 'Wave', 'Sex', 'Age', 'Birthdate', 'Waveform'],
         index_col = False, 
         skiprows = [0,1])
-    df = df[df['Clinical'].isin(training_set)]
+    df = df[df['Wave'].isin(training_set)]
     if settings['verbose']:
         print(f"Dimensions of data set: {df.shape}")
         print(f"Data set reflects data for {len(df['Clinical'].unique().tolist())} clinical IDs")
@@ -48,6 +49,7 @@ def format_df(df, record):
     df["age"] = record["raw_data"]["Age"]
     df["sex"] = record["raw_data"]["Sex"]
     df["clinical"] = record["raw_data"]["Clinical"]
+    df["wave"] = record["raw_data"]["Wave"]
 
     #surrogate = t0[record["raw_data"]["Wave"]]
     #df["before_t0"] = df["ts"].apply(lambda x: x < surrogate)
@@ -63,28 +65,60 @@ def format_df(df, record):
 
 
 
-def generate_waveform_dataset(e, record_map):
+def generate_waveform_dataset(e, record_map, bucket_name, pull_local=True):
     settings = fetch_settings()
     df = record_map['data']
     data = filter_data_to_entity(df, 'Wave', e)
     data = data.squeeze().to_dict()
     result = {'raw_data': data}
     
-    if settings['verbose']: print(data)
-    record = wfdb.rdrecord(f"data/train_wave/{data['Wave']}")
-    record_dict = {
-        'raw_data': data,
-        'waveform_record': record.__dict__
-    }
-    df_indiv = pd.DataFrame(record_dict['waveform_record']['p_signal'], columns = record_dict['waveform_record']['sig_name'])
-    #if settings['verbose']: print(record_dict)
-    #print(record_dict)
-    #if settings['verbose']: print(df_indiv)
-    
-    df2 = format_df(df_indiv,record_dict)
-    #return {
-    #    'raw_data': data,
-    #    'waveform_record': record.__dict__
-    #}
-    return df2
-    
+    if settings['verbose']: 
+        print(data)
+
+    if pull_local:
+        try:
+            record = wfdb.rdrecord(f"data/train_wave/{data['Wave']}")
+            record_dict = {
+                'raw_data': data,
+                'waveform_record': record.__dict__
+            }
+            df_indiv = pd.DataFrame(record_dict['waveform_record']['p_signal'], columns = record_dict['waveform_record']['sig_name'])
+            #if settings['verbose']: print(record_dict)
+            #print(record_dict)
+            #if settings['verbose']: print(df_indiv)
+            
+            df2 = format_df(df_indiv,record_dict)
+            #return {
+            #    'raw_data': data,
+            #    'waveform_record': record.__dict__
+            #}
+            return df2
+            #record = wfdb.rdrecord(f"data/train_wave/{data['Wave']}")
+            #return {
+            #    'raw_data': data,
+            #    'waveform_record': record.__dict__
+            #}
+        except FileNotFoundError:
+            print(f"Not all files exist for {e}")
+    else:
+        try:
+            print("Retrieving data from GCP")
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(bucket_name)
+            blobs = [i for i in bucket.list_blobs() if data['Wave'] in i.name]
+            for blob in blobs:
+                local_path = f"data/train_wave/{blob.name.split('/')[-1]}"
+                if os.path.isfile(local_path):
+                    print(f"{local_path} already exists.")
+                    continue
+                else:
+                    get_blob(bucket, blob, local_path)
+
+            print("Copy from GCP done... ")
+            record = wfdb.rdrecord(f"data/train_wave/{data['Wave']}")
+            return {
+                'raw_data': data,
+                'waveform_record': record.__dict__
+            }
+        except FileNotFoundError:
+            print(f"Not all files exist for {e}")
