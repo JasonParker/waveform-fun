@@ -1,5 +1,5 @@
 from flask import Flask, abort, redirect, request
-
+import os
 
 application = Flask(__name__)
 
@@ -11,4 +11,4 @@ def home_page():
 
 
 if __name__ == "__main__":
-    application.run(threaded=True, port=8080)
+    application.run(threaded=True, port=os.environ['PORT'])
