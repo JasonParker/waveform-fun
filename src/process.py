@@ -6,6 +6,7 @@ import os
 from data.gcp_pull_waveform_data import fetch_settings, generate_record_map, generate_waveform_dataset
 from utils.get_labels import get_training_labels, get_t0
 from data.bp_features import avg_bp, clean_bp_summary
+from retrieve_train_wf import upload_blob
 
 def load_data(pull_local=True):
     """Load data from GCP"""
@@ -28,7 +29,14 @@ def add_features():
     #for i, rec in enumerate(list(x.values())):
     for i, e in enumerate(record_map['waveform_entities'][0:15]):
         rec = generate_waveform_dataset(e, record_map, bucket_name)
-        df = pd.DataFrame(rec["ABP"])
+        if isinstance(rec, type(None)):
+            print("No data found")
+            continue
+        try:
+            df = pd.DataFrame(rec["ABP"])
+        except KeyError:
+            print("No ABP detected")
+            continue
         df = pd.DataFrame(rec, columns=["wave", "time", "ts", "ABP"])
         df = df[~df['ABP'].isna()]
         wave = df["wave"].values[0]
@@ -36,6 +44,8 @@ def add_features():
             continue
         #try:
         new_df = avg_bp(df, time_chunk=60)
+        if isinstance(new_df, type(None)):
+            continue
         clean_df = clean_bp_summary(new_df)
         #except:
         #    print("failed")
@@ -49,6 +59,28 @@ def add_features():
 
     return clean_df
 
+def combine_dataset():
+    """Combine CSV files for individual patients into single CSV file"""
+    files = os.listdir("data/processed/")
+    for idx, fil in enumerate(files):
+        if fil.split(".")[-1] == "csv":
+            df = pd.read_csv(f"data/processed/{fil}")
+        if idx == 0:
+            total_df = df
+        else:
+            total_df = total_df.append(df)
+
+    total_df.to_csv("data/processed/processed_all.csv")
+
+def push_to_bucket():
+    """Push combined dataset to GCP bucket"""
+    bucket_name = 'physionet_2009'
+    source_path = os.path.join("data/processed", "processed_all.csv")
+    destination = os.path.join("processed", "processed_all.csv")
+    upload_blob(bucket_name, source_path, destination)
+
 if __name__ == "__main__":
     #x = load_data(pull_local=True)
-    total_df = add_features()
+    #total_df = add_features()
+    #combine_dataset()
+    push_to_bucket()

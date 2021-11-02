@@ -145,11 +145,14 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
         new_df = new_df.append(cur_row)
     new_df.sort_values('start_window')
     new_df = new_df.reset_index()
-    new_df = new_df[['wave', 'start_window', 'end_window','start_window_time','end_window_time',
+    try:
+        new_df = new_df[['wave', 'start_window', 'end_window','start_window_time','end_window_time',
                      'avg_sys', 'avg_dias','avg_map','all_values']]
-    new_df['current_hypotensive'] = np.where(new_df['avg_map'] <= 65, 1,0)
-    new_df['hypotensive_in_15'] = new_df['current_hypotensive'].shift(periods=-15)
-    return new_df
+        new_df['current_hypotensive'] = np.where(new_df['avg_map'] <= 65, 1,0)
+        new_df['hypotensive_in_15'] = new_df['current_hypotensive'].shift(periods=-15)
+        return new_df
+    except KeyError:
+        return None
 
   
 
