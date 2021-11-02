@@ -28,7 +28,7 @@ LABEL summary="$SUMMARY" \
 # Copy local code to the container image.
 ENV APP_HOME /
 WORKDIR $APP_HOME
-COPY . /
+COPY / /
 
 #RUN pip install --upgrade pip && pip install -r requirements.txt
 
