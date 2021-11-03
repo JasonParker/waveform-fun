@@ -4,12 +4,12 @@ import numpy as np
 import wfdb
 import datetime
 from google.cloud import storage
-from utils.get_blobs import get_blob
+#from utils.get_blobs import get_blob
 
 
 def fetch_settings():
     return {
-        'fetch_clinical_data': False,
+        'fetch_clinical_data': True,
         'verbose': True,
         'google_cloud': {
             'project': os.environ['PROJECT_ID']

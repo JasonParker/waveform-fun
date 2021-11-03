@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from scipy.signal import find_peaks
+from dateutil.rrule import rrule, SECONDLY
+from datetime import timedelta
 
 def get_sys_bp(df):
     """ Get systolic blood pressures for a abp waveform
@@ -89,6 +91,31 @@ def clean_bp_summary(df):
     return df
 
 
+def create_lookback(df, time=1):
+    """Create lookback windows for each row
+    time is in minutes
+    """
+    time_diff = df.iloc[1].start_window_time - df.iloc[0].start_window_time
+    time_diff = time_diff.seconds / 60 # Conversion from s to min.
+    if time_diff > time:
+        raise ValueError("Lookback window time must be greater or equal to the time windows")
+    n_skips = time / time_diff  # Example: lookback is 10 minutes, window of 5: 10 / 5 = look back two windows
+
+    lb_array = np.zeros(df.shape[0])
+    for index, row in df.iterrows():
+        lb_idx = int(index - n_skips)
+        if lb_idx < min(df.index):
+            lb_array[index] = None
+        else:
+            lookback = df.iloc[lb_idx]
+            lb_array[index] = lookback["avg_map"]
+
+    df[f"lb_{time}_map"] = lb_array
+
+    return df
+
+
+
 def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
     """ Get diastolic blood pressures for a abp waveform
     
@@ -120,14 +147,23 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
         
     """
     x = df[[waveform_type]]
-    start_window = x.index[0]
-    end_window = x.index[-1]
+    start_window = df.index[0]
+    start_window_time = df.loc[start_window,'ts']
+    print(start_window_time)
+    end_window = df.index[-1]
+    end_window_time = df.loc[end_window,'ts']
+    print(end_window_time)
+    print(type(end_window_time))
     time_window = (time_window * 1000) // 8
     time_chunk = (time_chunk * 1000) // 8
     new_df = pd.DataFrame(columns = ['wave', 'start_window', 'end_window', 'avg_sys','avg_dias','avg_map', 'all_values'])
-    for cur_window in range(start_window + time_chunk, end_window, time_window):
-        df_sub = df.loc[cur_window-time_chunk:cur_window,:]
-        x_sub = x.loc[cur_window-time_chunk:cur_window]
+    for cur_time in range(start_window + time_chunk, end_window, time_window):
+    #for cur_time in rrule(freq = SECONDLY, interval = time_window, 
+    #                      dtstart = start_window_time + timedelta(seconds = time_chunk),until = end_window_time):
+        #print(cur_time)
+        #print(new_df.shape)
+        df_sub =  df[(df.index >= (cur_time - time_chunk)) & (df.index < cur_time)]
+        x_sub = df_sub[[waveform_type]]
         sys_pressure = get_sys_bp(x_sub)
         dias_pressure = get_dias_bp(x_sub)
         avg_sys = np.nanmean([x[1] for x in sys_pressure])
@@ -135,10 +171,11 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
         avg_maps = (avg_sys + 2 * (avg_dias))/3
         #print(df_sub.loc[cur_window-time_chunk,'ts'])
         all_values = x_sub[waveform_type].to_numpy()
+        #print(df_sub.head())
         try:
-            cur_row = pd.DataFrame(data = {'wave': [df["wave"].values[0]], 'start_window':[cur_window-time_chunk],
-                                           'start_window_time':[df_sub.loc[cur_window-time_chunk,'ts']],
-                                       'end_window':[cur_window], 'end_window_time':[df_sub.loc[cur_window,'ts']],
+            cur_row = pd.DataFrame(data = {'wave': [df["wave"].values[0]], 'start_window':[df_sub.index[0]],
+                                           'start_window_time':[start_window_time],
+                                       'end_window':[df_sub.index[-1]], 'end_window_time':[end_window_time],
                                        'avg_sys':[avg_sys], 'avg_dias':[avg_dias], 'avg_map':[avg_maps],'all_values': [all_values]})
         except KeyError:
             continue
@@ -160,33 +197,3 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
         return None
 
   
-
-def merge_df(e, df_in, df_out):
-    final_df = df_out.merge(right = df_in, on = 'start_window', suffixes = ['_outputs','_inputs'])
-    final_df['waveform_id'] = e
-    
-    return final_df
-
-
-def create_lookback(df, time=1):
-    """Create lookback windows for each row
-    time is in minutes
-    """
-    time_diff = df.iloc[1].start_window_time - df.iloc[0].start_window_time
-    time_diff = time_diff.seconds / 60 # Conversion from s to min.
-    if time_diff > time:
-        raise ValueError("Lookback window time must be greater or equal to the time windows")
-    n_skips = time / time_diff  # Example: lookback is 10 minutes, window of 5: 10 / 5 = look back two windows
-
-    lb_array = np.zeros(df.shape[0])
-    for index, row in df.iterrows():
-        lb_idx = int(index - n_skips)
-        if lb_idx < min(df.index):
-            lb_array[index] = None
-        else:
-            lookback = df.iloc[lb_idx]
-            lb_array[index] = lookback["avg_map"]
-
-    df[f"lb_{time}_map"] = lb_array
-
-    return df

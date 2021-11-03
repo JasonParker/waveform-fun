@@ -16,9 +16,9 @@ def load_data(pull_local=True):
     training = get_training_labels()
 
     record_map = generate_record_map(bucket_name, fs, training)
-    x = {e: generate_waveform_dataset(e, record_map, bucket_name, pull_local) for e in record_map['waveform_entities'][0:2]}
+    #x = {e: generate_waveform_dataset(e, record_map, bucket_name, pull_local) for e in record_map['waveform_entities'][0:2]}
 
-    return x
+    return record_map
 
 def add_features():
     """ Add features and format dataset"""
@@ -61,27 +61,31 @@ def add_features():
 
     return clean_df
 
-def add_features_new(e, record_map_file, outcome_period, input_period):
+def add_features_new(e, record_map, outcome_period, input_period, bucket_name='physionet_2009'):
     # open and read record map
     
     
     rec = generate_waveform_dataset(e, record_map, bucket_name)
-        if isinstance(rec, type(None)):
-            print("No data found")
-            continue
-        try:
-            'ABP' in rec.columns
-        except KeyError:
-            print("No ABP detected")
-            continue
-        df = pd.DataFrame(rec, columns=["wave",'clinical', "time", "ts",'age','sex',"ABP"])
-        df = df[~df['ABP'].isna()]
-        wave = df["wave"].values[0]
-        outcome_avg = avg_bp(df, time_chunk = outcome_window, time_window = 60)
-        input_avg = avg_bp(df, time_chunk = input_window, time_window = 60)
-        final_df = merge_df(wave, input_avg, outcome_avg)
-        
-        
+    #if isinstance(rec, type(None)):
+    #    print("No data found")
+    #    continue
+    #try:
+    #    'ABP' in rec.columns
+    #except KeyError:
+    #    print("No ABP detected")
+    #    continue
+    df = pd.DataFrame(rec, columns=["wave",'clinical', "time", "ts",'age','sex',"ABP"])
+    #df = df[~df['ABP'].isna()]
+    wave = df["wave"].values[0]
+    outcome_avg = avg_bp(df, time_chunk = outcome_period, time_window = 60)
+    input_avg = avg_bp(df, time_chunk = input_period, time_window = 60)
+    
+    final_df = final_df = outcome_avg.merge(right = input_avg, on = 'start_window', suffixes = ['_outputs','_inputs'])
+    
+    input_minutes = input_period // 60
+    
+    final_df.to_json(f"data/processed/data_{wave}_{input_minutes}_avg.json")
+    return final_df
         
         
 
@@ -106,7 +110,11 @@ def push_to_bucket(e,):
     upload_blob(bucket_name, source_path, destination)
 
 if __name__ == "__main__":
-    #x = load_data(pull_local=True)
-    total_df = add_features()
+    print(os.getcwd())
+    os.environ["PROJECT_ID"] = "qwiklabs-gcp-04-133e595cc3fe"
+    record_map = load_data(pull_local=True)
+    for e in record_map['waveform_entities'][2:5]:
+        total_df = add_features_new(e, record_map, outcome_period = 60*5, input_period = 60 * 20, bucket_name='physionet_2009')
+        #print(e + ': '+ total_df.shape)
     #combine_dataset()
     #push_to_bucket()
