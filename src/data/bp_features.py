@@ -80,10 +80,10 @@ def calc_map(sys, dias):
     return indices, maps
 
 def clean_bp_summary(df):
-    good_sys = df['avg_sys'] >= 30
-    good_dias = df['avg_dias'] >= 10
+    good_sys = df['avg_sys'] >= 30 & df['avg_sys'].notnull()
+    good_dias = df['avg_dias'] >= 10 & df['avg_dias'].notnull()
     has_outcome = df['hypotensive_in_15'].notnull()
-    
+    print('cleaning data')
     df['include_in_model'] = np.where(good_sys & good_dias & has_outcome, 1, 0)
     
     return df
@@ -130,19 +130,22 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
         x_sub = x.loc[cur_window-time_chunk:cur_window]
         sys_pressure = get_sys_bp(x_sub)
         dias_pressure = get_dias_bp(x_sub)
-        avg_sys = np.mean([x[1] for x in sys_pressure])
-        avg_dias = np.mean([x[1] for x in dias_pressure])
+        avg_sys = np.nanmean([x[1] for x in sys_pressure])
+        avg_dias = np.nanmean([x[1] for x in dias_pressure])
         avg_maps = (avg_sys + 2 * (avg_dias))/3
         #print(df_sub.loc[cur_window-time_chunk,'ts'])
         all_values = x_sub[waveform_type].to_numpy()
         try:
-            cur_row = pd.DataFrame(data = {'wave': [df["wave"].values[0]], 'start_window':[cur_window-time_chunk],'start_window_time':[df_sub.loc[cur_window-time_chunk,'ts']],
+            cur_row = pd.DataFrame(data = {'wave': [df["wave"].values[0]], 'start_window':[cur_window-time_chunk],
+                                           'start_window_time':[df_sub.loc[cur_window-time_chunk,'ts']],
                                        'end_window':[cur_window], 'end_window_time':[df_sub.loc[cur_window,'ts']],
                                        'avg_sys':[avg_sys], 'avg_dias':[avg_dias], 'avg_map':[avg_maps],'all_values': [all_values]})
         except KeyError:
             continue
         #print(cur_row)
         new_df = new_df.append(cur_row)
+        
+        
     new_df.sort_values('start_window')
     new_df = new_df.reset_index()
     try:
@@ -150,18 +153,15 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
                      'avg_sys', 'avg_dias','avg_map','all_values']]
         new_df['current_hypotensive'] = np.where(new_df['avg_map'] <= 65, 1,0)
         new_df['hypotensive_in_15'] = new_df['current_hypotensive'].shift(periods=-15)
+        print('going to clean data')
+        new_df = clean_bp_summary(new_df)
         return new_df
     except KeyError:
         return None
 
   
 
-def merge_df(e_in,e_out, df_in, df_out):
-    if e_in != e_out:
-        print(f'mismatch ids {e_in} - {e_out}')
-    else:
-        e = e_in
-    
+def merge_df(e, df_in, df_out):
     final_df = df_out.merge(right = df_in, on = 'start_window', suffixes = ['_outputs','_inputs'])
     final_df['waveform_id'] = e
     

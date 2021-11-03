@@ -27,7 +27,7 @@ def add_features():
     training = get_training_labels()
     record_map = generate_record_map(bucket_name, fs, training)
     #for i, rec in enumerate(list(x.values())):
-    for i, e in enumerate(record_map['waveform_entities'][0:2]):
+    for e in record_map['waveform_entities'][0:2]:
         rec = generate_waveform_dataset(e, record_map, bucket_name)
         if isinstance(rec, type(None)):
             print("No data found")
@@ -61,6 +61,30 @@ def add_features():
 
     return clean_df
 
+def add_features_new(e, record_map_file, outcome_period, input_period):
+    # open and read record map
+    
+    
+    rec = generate_waveform_dataset(e, record_map, bucket_name)
+        if isinstance(rec, type(None)):
+            print("No data found")
+            continue
+        try:
+            'ABP' in rec.columns
+        except KeyError:
+            print("No ABP detected")
+            continue
+        df = pd.DataFrame(rec, columns=["wave",'clinical', "time", "ts",'age','sex',"ABP"])
+        df = df[~df['ABP'].isna()]
+        wave = df["wave"].values[0]
+        outcome_avg = avg_bp(df, time_chunk = outcome_window, time_window = 60)
+        input_avg = avg_bp(df, time_chunk = input_window, time_window = 60)
+        final_df = merge_df(wave, input_avg, outcome_avg)
+        
+        
+        
+        
+
 def combine_dataset():
     """Combine CSV files for individual patients into single CSV file"""
     files = os.listdir("data/processed/")
@@ -74,7 +98,7 @@ def combine_dataset():
 
     total_df.to_csv("data/processed/processed_all.json")
 
-def push_to_bucket():
+def push_to_bucket(e,):
     """Push combined dataset to GCP bucket"""
     bucket_name = 'physionet_2009'
     source_path = os.path.join("data/processed", "processed_all.json")
