@@ -92,6 +92,7 @@ def generate_waveform_dataset(e, record_map, bucket_name, pull_local=True):
             #    'raw_data': data,
             #    'waveform_record': record.__dict__
             #}
+            print('waveform created')
             return df2
             #record = wfdb.rdrecord(f"data/train_wave/{data['Wave']}")
             #return {

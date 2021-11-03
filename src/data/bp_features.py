@@ -156,14 +156,15 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
     print(type(end_window_time))
     time_window = (time_window * 1000) // 8
     time_chunk = (time_chunk * 1000) // 8
-    new_df = pd.DataFrame(columns = ['wave', 'start_window', 'end_window', 'avg_sys','avg_dias','avg_map', 'all_values'])
-    for cur_time in range(start_window + time_chunk, end_window, time_window):
+    new_df = []#pd.DataFrame(columns = ['wave', 'start_window', 'end_window', 'avg_sys','avg_dias','avg_map', 'all_values'])
+    for cur_time in range(start_window + time_chunk, end_window, time_window):     
     #for cur_time in rrule(freq = SECONDLY, interval = time_window, 
     #                      dtstart = start_window_time + timedelta(seconds = time_chunk),until = end_window_time):
-        #print(cur_time)
+        print(cur_time)
         #print(new_df.shape)
-        df_sub =  df[(df.index >= (cur_time - time_chunk)) & (df.index < cur_time)]
-        x_sub = df_sub[[waveform_type]]
+        #df_sub =  df[(df.index >= (cur_time - time_chunk)) & (df.index < cur_time)]
+        x_sub = df_sub.loc[cur_time - time_chunk : cur_time, waveform_type]
+        #x_sub = df_sub[[waveform_type]]
         sys_pressure = get_sys_bp(x_sub)
         dias_pressure = get_dias_bp(x_sub)
         avg_sys = np.nanmean([x[1] for x in sys_pressure])
@@ -180,10 +181,10 @@ def avg_bp(df, time_chunk, time_window = 60,waveform_type = 'ABP'):
         except KeyError:
             continue
         #print(cur_row)
-        new_df = new_df.append(cur_row)
+        new_df.append(cur_row)
         
-        
-    new_df.sort_values('start_window')
+    new_df = pd.concat(new_df, axis = 0)
+    new_df = new_df.sort_values('start_window')
     new_df = new_df.reset_index()
     try:
         new_df = new_df[['wave', 'start_window', 'end_window','start_window_time','end_window_time',

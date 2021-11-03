@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import gcsfs
 import os
+import argparse
 
 from data.gcp_pull_waveform_data import fetch_settings, generate_record_map, generate_waveform_dataset
 from utils.get_labels import get_training_labels, get_t0
@@ -110,11 +111,22 @@ def push_to_bucket(e,):
     upload_blob(bucket_name, source_path, destination)
 
 if __name__ == "__main__":
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '-id','--id',
+        dest='waveform_id', action='store_true',
+        default=False, required = True)
+    
+    args = parser.parse_args()
+    """
     print(os.getcwd())
     os.environ["PROJECT_ID"] = "qwiklabs-gcp-04-133e595cc3fe"
     record_map = load_data(pull_local=True)
-    for e in record_map['waveform_entities'][2:5]:
-        total_df = add_features_new(e, record_map, outcome_period = 60*5, input_period = 60 * 20, bucket_name='physionet_2009')
-        #print(e + ': '+ total_df.shape)
+    
+    total_df = add_features_new(e = 'a41664', record_map =record_map, outcome_period = 60*5, input_period = 60 * 20, bucket_name='physionet_2009')
+    gc.collect()
+    #print(e + ': '+ total_df.shape)
     #combine_dataset()
     #push_to_bucket()
