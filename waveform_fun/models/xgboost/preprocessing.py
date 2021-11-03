@@ -1,12 +1,10 @@
-from xgboost import XGBClassifier
 from waveform_fun.src.utils.get_labels import get_training_labels
 import datetime
-import logging
 import os
 import shutil
 
-#import hypertune
 import numpy as np
+import pandas as pd
 
 CSV_COLUMNS = [
         "wave",
@@ -88,7 +86,7 @@ def split_by_patient(df, train_split=0.6, test_split=0.2):
     return train_df, test_df, valid_df
 
 def load_dataset():
-    df = pd.read_csv("src/data/processed/processed_all.csv")
+    df = pd.read_csv("../../src/data/processed/processed_all.csv")
     df = df.drop(columns=["Unnamed: 0", "Unnamed: 0.1"])
     # Drop instances where patient is hypotensive and then isn't later on
     to_drop = df[(df.current_hypotensive == 1) & (df.hypotensive_in_15 == 1.0)]

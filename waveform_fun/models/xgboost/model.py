@@ -1,12 +1,12 @@
 from xgboost import XGBClassifier
 from waveform_fun.src.utils.get_labels import get_training_labels
 from waveform_fun.src.retrieve_train_wf import upload_blob
-from datetime import datetime
 import datetime
 import logging
 import os
 import shutil
 import preprocessing
+import sklearn
 
 #import hypertune
 import numpy as np
@@ -94,9 +94,9 @@ def train_and_evaluate(model):
                                                       y_test)
 
     # Save model locally
-    now = datetime.now()
-    date, time= str(now.split(" "))
-    model.save(f"xgb_files/xgbmodel_{date}_{time}.json")
+    now = datetime.datetime.now()
+    date, time= str(now).split(" ")
+    model.save_model(f"xgb_files/xgbmodel_{date}_{time}.json")
 
     # Write to a bucket
     upload_blob(BUCKET, f"xgb_files/xgbmodel_{date}_{time}.json", "models")
