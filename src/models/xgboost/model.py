@@ -1,85 +1,105 @@
 from xgboost import XGBClassifier
+from src.utils.get_labels import get_training_labels
+from src.retrieve_train_wf import upload_blob
+from datetime import datetime
 import datetime
 import logging
 import os
 import shutil
+import preprocessing
 
 import hypertune
 import numpy as np
 
-CSV_COLUMNS = [
-        "wave",
-        "start_window",
-        "end_window",
-        "avg_sys",
-        "avg_dias",
-        "avg_map",
-        "current_hypotensive",
-        ]
-LABEL_COLUMN = "hypotensive_in_15"
+from sklearn.pipeline import Pipeline
 
-def split_by_time(df, split=0.7):
-    """Split into training and testing DFs by time"""
-    wave_ids = list(set(df.wave))
-    train_splits = dict()
-    # Get number of rows for each wave ID
-    for ids in wave_ids:
-        train_splits[ids] = len(df[df.wave == ids])
+PROJECT = os.environ["PROJECT_ID"]
+BUCKET = "physionet_2009"
 
-    # Split by 70% training, 30% testing
-    # Designate first 70% of rows per wave to training
-    train_df = pd.DataFrame().reindex_like(df)
-    test_df = pd.DataFrame().reindex_like(df)
-    train_idx = 0
-    test_idx = 0
-    for ids, count in train_splits.items():
-        split = round(count * split)
-        train = df[df.wave == ids].iloc[:split]
-        test = df[df.wave == ids].iloc[split:]
-        train_df.iloc[train_idx:(train_idx+len(train))] = train
-        test_df.iloc[test_idx:(test_idx+len(test))] = test
-        train_idx += len(train)
-        test_idx += len(test)
-        # Drop NAs
-    train_df = train_df.dropna()
-    test_df = test_df.dropna()
+def run_pipeline(model, X_train, y_train, X_test, y_test, verbose=True):
+    """Run pipeline in SKlearn to fit and make predictions with a model
+    Parameters
+    ----------
+    model :
+        Model to use
+    X_train : np.array, shape=(nrows, ncolumns)
+        Training features
+    y_train : np.array, shape=(nrows,)
+        Training label to predict
+    X_test : np.array, shape=(nrows, ncolumns)
+        Test features
+    y_test : np.array, shape=(nrows,)
+        Test label to predict
+    Returns
+    -------
+    pipeline : sklearn.Pipeline object
+        Pipeline of model
+    pipeline_predictions : np.array(nrows)
+        Predictions from model
+    """
+    pipeline = Pipeline(steps=[('m', model)])
 
-    return train_df, test_df
+    pipeline.fit(X_train, y_train)
 
-def load_dataset():
-    df = pd.read_csv("src/data/processed/processed_all.csv")
-    df = df.drop(columns=["Unnamed: 0", "Unnamed: 0.1"])
-    # Drop instances where patient is hypotensive and then isn't later on
-    to_drop = df[(df.current_hypotensive == 1) & (df.hypotensive_in_15 == 1.0)]
-    new_df = df.drop(to_drop.index)
-    new_df["hypotensive_in_15"] = new_df["hypotensive_in_15"].astype(int)
+    pipeline_predictions = pipeline.predict(X_test)
 
-    ## Convert wave data to numerical
-    new_df.wave, mapping = pd.factorize(new_df.wave)
+    if verbose:
+        print_metrics(pipeline, X_test, y_test, pipeline_predictions)
 
-    return df
+    return pipeline, pipeline_predictions
 
-def create_train_and_test(df, split=0.7):
-    train_df, test_df = split_by_time(df, split)
+def print_metrics(model, X_test, actual, predicted):
+    """Output metrics from model
 
-    return train_df, test_df
+    Parameters
+    ----------
+    model : sklearn or xgboost object
+        Model to evaluate
+    X_test : np.array, shape=(nrows, ncolumns)
+        Test features
+    actual : np.array, shape=(nrows,)
+        Test label to predict
+    predict : np.array, shape=(nrows,)
+        Label predictions from model
 
-def process_data():
-    df = load_dataset()
-    train_df, test_df = split_by_time(df)
+    Returns
+    -------
+    """
+    metrics = sklearn.metrics.classification_report(actual, predicted)
+    print(metrics)
 
-    y_train = np.array(train_df[LABEL_COLUMN])
-    y_test = np.array(test_df[LABEL_COLUMN])
-    X_train = train_df[CSV_COLUMNS]
-    X_test = test_df[CSV_COLUMNS]
+    cm = sklearn.metrics.plot_confusion_matrix(model, X_test, actual)
 
-    return X_train, y_train, X_test, y_test
+    # Plot ROC curve
+    roc = sklearn.metrics.plot_roc_curve(model, X_test, actual)
 
-def build_xgboost_model(lr):
+
+def build_xgboost_model():
     xgb = XGBClassifier(random_state=0, importance="weight")
 
     return xgb
 
+def train_and_evaluate():
+    """Build model"""
+    model = build_xgboost_model()
+
+    # Load and process data
+    X_train, y_train, X_test, y_test, X_valid, y_valid = preprocessing.process_data()
+
+    # Train model
+    xgb_pipeline, xgb_pipeline_predictions = run_pipeline(xgb,
+                                                      X_train,
+                                                      y_train,
+                                                      X_test,
+                                                      y_test)
+
+    # Save model locally
+    now = datetime.now()
+    date, time= str(now.split(" "))
+    model.save(f"xgb_files/xgbmodel_{date}_{time}.json")
+
+    # Write to a bucket
+    upload_blob(BUCKET, f"xgb_files/xgbmodel_{date}_{time}.json", "models")
 
 hpt = hypertune.HyperTune()
 
