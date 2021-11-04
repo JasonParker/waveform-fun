@@ -55,7 +55,7 @@ def scoring_route_auto_ml():
     predictions = predict_tabular_classification_sample(
         project="741350817607",
         endpoint_id="8317875832869617664",
-        location="us-central1",instances=pred_input)
+        location="us-central1",instance_dict=pred_input)
     
     for prediction in predictions:
         current_pred = dict(prediction)
