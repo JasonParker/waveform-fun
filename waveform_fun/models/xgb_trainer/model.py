@@ -2,8 +2,10 @@ from xgboost import XGBClassifier
 from waveform_fun.src.utils.get_labels import get_training_labels
 from waveform_fun.src.retrieve_train_wf import upload_blob
 import datetime
+import joblib
 import logging
 import os
+import pickle
 import shutil
 from waveform_fun.models.xgb_trainer import preprocessing
 import sklearn
@@ -82,7 +84,7 @@ def build_xgboost_model():
 def train_and_evaluate(model, output_dir):
     """Train model"""
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    savedmodel_dir = os.path.join(output_dir, "export/savedmodel")
+    savedmodel_dir = os.path.join(output_dir, "savedmodel")
     model_export_path = os.path.join(savedmodel_dir, timestamp)
 
     # Load and process data
@@ -102,12 +104,20 @@ def train_and_evaluate(model, output_dir):
     date, time= str(now).split(" ")
     #model.save_model(f"xgb_files/xgbmodel_{date}_{time}.json")
     #model.save_model(f"waveform_fun/models/xgb_trainer/xgb_files/xgbmodel_{date}_{time}.json")
-    model.save_model(f"xgbmodel_{date}_{time}.json")
+    # Save as json
+    model.save_model("model.json")
+    # Save as pkl
+    #with open('xgbmodel_{date}_{time}.pkl', 'wb') as model_file:
+    #    pickle.dump(model, model_file)
+    joblib.dump(model, "model.joblib")
 
     # Write to a bucket
     #upload_blob(BUCKET, f"xgbmodel_{date}_{time}.json", model_export_path) 
-    json_file = f"xgbmodel_{date}_{time}.json"
-    os.system(f'gsutil cp {json_file} gs://{model_export_path}/')
+    json_file = "model.json"
+    pkl_file = "model.pkl"
+    joblib_file = "model.joblib"
+    os.system(f'gsutil cp {json_file} {model_export_path}/')
+    os.system(f'gsutil cp {joblib_file} {model_export_path}/')
 
     return xgb_pipeline, xgb_pipeline_predictions
 
