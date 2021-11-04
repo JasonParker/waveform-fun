@@ -5,7 +5,7 @@ import datetime
 import logging
 import os
 import shutil
-import preprocessing
+from waveform_fun.models.xgb_trainer import preprocessing
 import sklearn
 
 #import hypertune

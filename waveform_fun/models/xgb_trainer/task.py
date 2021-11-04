@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 
-import model
+from waveform_fun.models.xgb_trainer import model
 
 def _parse_arguments(argv):
     """ Not currently used"""

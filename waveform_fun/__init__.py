@@ -1,4 +1,4 @@
-from waveform_fun.src import *
-from waveform_fun.models.xgboost import *
-
-__version__ = "0.0.0"
+from waveform_fun import models
+from waveform_fun import src
+from waveform_fun.models import xgb_trainer
+from waveform_fun.models.xgb_trainer import *
