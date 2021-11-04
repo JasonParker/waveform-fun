@@ -28,7 +28,7 @@ PYTHON_PACKAGE_EXECUTOR_IMAGE_URI = (
 SERVING_CONTAINER_IMAGE_URI = (
     "us-docker.pkg.dev/vertex-ai/prediction/tf2-cpu.2-3:latest"
 )
-PYTHON_MODULE = "task"
+PYTHON_MODULE = "waveform_fun.models.xgb_trainer.task"
 
 # Model and training hyperparameters
 # TODO: DO later

@@ -96,10 +96,11 @@ def train_and_evaluate(model):
     # Save model locally
     now = datetime.datetime.now()
     date, time= str(now).split(" ")
-    model.save_model(f"xgb_files/xgbmodel_{date}_{time}.json")
+    #model.save_model(f"xgb_files/xgbmodel_{date}_{time}.json")
+    model.save_model(f"waveform_fun/models/xgb_trainer/xgb_files/xgbmodel_{date}_{time}.json")
 
     # Write to a bucket
-    upload_blob(BUCKET, f"xgb_files/xgbmodel_{date}_{time}.json", "models")
+    upload_blob(BUCKET, f"waveform_fun/models/xgb_trainer/xgb_files/xgbmodel_{date}_{time}.json", "models")
 
     return xgb_pipeline, xgb_pipeline_predictions
 
