@@ -29,7 +29,7 @@ def scoring_route():
     ##       2. Generate a prediction
     ##       3. Respond with a JSON object including the original
     ##          data and the prediction
-    return f"Model training initiated at {datetime.utcnow()}"
+    return f"Model scoring initiated at {datetime.utcnow()}"
 
 
 if __name__ == "__main__":
