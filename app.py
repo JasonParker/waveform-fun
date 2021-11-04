@@ -57,15 +57,15 @@ def scoring_route_auto_ml():
     print(pred_input)
     
     
-    predictions = predict_tabular_classification_sample(
-        project="741350817607",
-        endpoint_id="8317875832869617664",
-        location="us-central1",instance_dict=pred_input)
+    #predictions = predict_tabular_classification_sample(
+    #    project="741350817607",
+    #    endpoint_id="8317875832869617664",
+    #    location="us-central1",instance_dict=pred_input)
     
-    for prediction in predictions:
-        current_pred = dict(prediction)
-    #return f"Patient Hypotensive in 15 min prediction: {datetime.utcnow()}"
-    return f"Patient Hypotensive in 15 min prediction: {current_pred}"
+    #for prediction in predictions:
+    #    current_pred = dict(prediction)
+    ##return f"Patient Hypotensive in 15 min prediction: {datetime.utcnow()}"
+    return f"Patient Hypotensive in 15 min prediction: {pred_input}"
 
 
 if __name__ == "__main__":
