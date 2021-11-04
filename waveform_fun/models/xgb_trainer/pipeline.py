@@ -10,6 +10,7 @@ from kfp.v2.google import experimental
 from task import main
 
 TIMESTAMP = datetime.now().strftime("%Y%m%d%H%M%S")
+os.environ["PROJECT_ID"] = "qwiklabs-gcp-04-133e595cc3fe"
 PROJECT = os.environ["PROJECT_ID"]
 BUCKET = "physionet_2009"
 PIPELINE_ROOT = f"gs://{BUCKET}/pipeline_root"

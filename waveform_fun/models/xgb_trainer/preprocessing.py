@@ -1,4 +1,5 @@
 from waveform_fun.src.utils.get_labels import get_training_labels
+from google.cloud import storage
 import datetime
 import os
 import gcsfs
@@ -17,6 +18,19 @@ CSV_COLUMNS = [
         "current_hypotensive",
         ]
 LABEL_COLUMN = "hypotensive_in_15"
+
+
+def get_blob(bucket_name, blob, destination):
+    """Retrieve file from the bucket."""
+    # The ID of your GCS bucket
+    # bucket_name = "your-bucket-name"
+    # The path to your file to upload
+    # source_file_name = "local/path/to/file"
+    # The ID of your GCS object
+    # destination_blob_name = "storage-object-name"
+
+    storage_client = storage.Client()
+    blob.download_to_filename(destination)
 
 def split_by_time(df, split=0.7):
     """Split into training and testing DFs by time"""
@@ -87,12 +101,16 @@ def split_by_patient(df, train_split=0.6, test_split=0.2):
     return train_df, test_df, valid_df
 
 def load_dataset():
-    #df = pd.read_csv("../../src/data/processed/processed_all.csv")
-    fs = gcsfs.GCSFileSystem(project=os.environ['PROJECT_ID'])
+    #df = pd.read_csv("waveform_fun/src/data/processed/processed_all.csv")
     bucket_name = 'physionet_2009'
-    df = pd.read_csv(
-            fs.open(f"{bucket_name}/processed/processed_all.csv")
-            )
+    #os.environ["PROJECT_ID"] = "qwiklabs-gcp-04-133e595cc3fe"
+    #fs = gcsfs.GCSFileSystem(project=os.environ['PROJECT_ID'])
+    #df = pd.read_csv(
+    #        fs.open(f"{bucket_name}/processed/processed_all.csv")
+    #        )
+    # Copy file from bucket
+    os.system(f'gsutil cp gs://{bucket_name}/processed/processed_all.csv .')
+    df = pd.read_csv("processed_all.csv")
     df = df.drop(columns=["Unnamed: 0", "Unnamed: 0.1"])
     # Drop instances where patient is hypotensive and then isn't later on
     to_drop = df[(df.current_hypotensive == 1) & (df.hypotensive_in_15 == 1.0)]

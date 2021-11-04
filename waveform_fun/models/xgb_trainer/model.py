@@ -13,7 +13,6 @@ import numpy as np
 
 from sklearn.pipeline import Pipeline
 
-PROJECT = os.environ["PROJECT_ID"]
 BUCKET = "physionet_2009"
 
 def run_pipeline(model, X_train, y_train, X_test, y_test, verbose=True):
@@ -80,8 +79,11 @@ def build_xgboost_model():
 
     return xgb
 
-def train_and_evaluate(model):
+def train_and_evaluate(model, output_dir):
     """Train model"""
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    savedmodel_dir = os.path.join(output_dir, "export/savedmodel")
+    model_export_path = os.path.join(savedmodel_dir, timestamp)
 
     # Load and process data
     X_train, y_train, X_test, y_test, X_valid, y_valid = preprocessing.process_data()
@@ -90,17 +92,22 @@ def train_and_evaluate(model):
     xgb_pipeline, xgb_pipeline_predictions = run_pipeline(model,
                                                       X_train,
                                                       y_train,
-                                                      X_test,
-                                                      y_test)
+                                                      X_valid,
+                                                      y_valid,
+                                                      verbose=False)
+    print(xgb_pipeline_predictions)
 
     # Save model locally
     now = datetime.datetime.now()
     date, time= str(now).split(" ")
     #model.save_model(f"xgb_files/xgbmodel_{date}_{time}.json")
-    model.save_model(f"waveform_fun/models/xgb_trainer/xgb_files/xgbmodel_{date}_{time}.json")
+    #model.save_model(f"waveform_fun/models/xgb_trainer/xgb_files/xgbmodel_{date}_{time}.json")
+    model.save_model(f"xgbmodel_{date}_{time}.json")
 
     # Write to a bucket
-    upload_blob(BUCKET, f"waveform_fun/models/xgb_trainer/xgb_files/xgbmodel_{date}_{time}.json", "models")
+    #upload_blob(BUCKET, f"xgbmodel_{date}_{time}.json", model_export_path) 
+    json_file = f"xgbmodel_{date}_{time}.json"
+    os.system(f'gsutil cp {json_file} gs://{model_export_path}/')
 
     return xgb_pipeline, xgb_pipeline_predictions
 

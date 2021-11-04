@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import json
 import os
 
@@ -60,8 +61,12 @@ def main():
     """
     This function will perform model training
     """
+    TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    BUCKET = "physionet_2009"
+    
+    OUTDIR = f"gs://{BUCKET}/models/trained_xgb_model_{TIMESTAMP}"
     xgb = model.build_xgboost_model()
-    trained, predictions = model.train_and_evaluate(xgb)
+    trained, predictions = model.train_and_evaluate(xgb, OUTDIR)
 
 if __name__ == "__main__":
     main()
