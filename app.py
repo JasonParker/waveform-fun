@@ -44,12 +44,17 @@ def scoring_route_auto_ml():
     sys_BP = request.args.get('sysBP',type=float)
     dias_BP = request.args.get('diasBP',type=float)
     map_BP = (sys_BP + 2 * dias_BP) / 3
+    end_window_str = str(0)
+    print(type(end_window_str))
+    start_window_str = str(0)
+    print(type(start_window_str))
     
     pred_input = {'avg_sys':str(sys_BP),
                   'avg_map':str(map_BP),
                   'avg_dias':str(dias_BP),
-                  'end_window':str(0),
-                  'start_window':str(0)}
+                  'end_window': end_window_str,
+                  'start_window':start_window_str}
+    print(pred_input)
     
     
     predictions = predict_tabular_classification_sample(
