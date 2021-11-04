@@ -5,6 +5,6 @@ setup(
     name="waveform_fun",
     version="0.0",
     include_package_data=True,
-    packages=['waveform_fun'],
+    packages=find_packages(),
     description="Hypotension waveform fun",
 )
