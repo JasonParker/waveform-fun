@@ -1,5 +1,6 @@
 Flask
 google-cloud-storage
+google-cloud-aiplatform
 #gunicorn
 np
 pandas
