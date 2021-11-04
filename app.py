@@ -48,8 +48,8 @@ def scoring_route_auto_ml():
     pred_input = {'avg_sys':str(sys_BP),
                   'avg_map':str(map_BP),
                   'avg_dias':str(dias_BP),
-                  'end_window':'0',
-                  'start_window':'0'}
+                  'end_window':str(0),
+                  'start_window':str(0)}
     
     
     predictions = predict_tabular_classification_sample(
