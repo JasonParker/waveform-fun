@@ -2,10 +2,12 @@ Flask
 google-cloud-storage
 google-cloud-aiplatform
 #gunicorn
+kfp
 np
 pandas
 requests
 schedule
 scikit-learn==1.0
+task
 wfdb==3.4.1
 protobuf
