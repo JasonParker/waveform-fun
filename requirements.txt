@@ -9,5 +9,6 @@ requests
 schedule
 scikit-learn==1.0
 task
+typing
 wfdb==3.4.1
 protobuf
