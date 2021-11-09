@@ -49,31 +49,30 @@ def scoring_route_auto_ml():
     #          data and the prediction
     #print("It started")
     sys_BP = request.args.get('sysBP', type=float)
-    #dias_BP = request.args.get('diasBP', type=float)
-    #map_BP = (sys_BP + 2 * dias_BP) / 3
-    #end_window_str = str(0)
+    dias_BP = request.args.get('diasBP', type=float)
+    map_BP = (sys_BP + 2 * dias_BP) / 3
+    end_window_str = str(0)
     ##print(type(end_window_str))
-    #start_window_str = str(0)
-    #print(type(start_window_str))
-    #print("Debug 2")
-    #
-    #pred_input = {'avg_sys':str(sys_BP),
-    #              'avg_map':str(map_BP),
-    #              'avg_dias':str(dias_BP),
-    #              'end_window': end_window_str,
-    #              'start_window':start_window_str}
-    #
-    #print("Debug 3")
-    #predictions = predict_tabular_classification_sample(
-    #    project="741350817607",
-    #    endpoint_id="8317875832869617664",
-    #    location="us-central1",instance_dict=pred_input)
-    #
-    #print("Debug 4")
-    #for prediction in predictions:
-    #    current_pred = dict(prediction)
-    #print("Debug 5")
-    ###return f"Patient Hypotensive in 15 min prediction: {datetime.utcnow()}"
+    start_window_str = str(0)
+    print(type(start_window_str))
+
+    pred_input = {'avg_sys':str(sys_BP),
+                  'avg_map':str(map_BP),
+                  'avg_dias':str(dias_BP),
+                  'end_window': end_window_str,
+                  'start_window':start_window_str}
+    
+    print("Debug 3")
+    predictions = predict_tabular_classification_sample(
+        project="741350817607",
+        endpoint_id="8317875832869617664",
+        location="us-central1",instance_dict=pred_input)
+    
+    print("Debug 4")
+    for prediction in predictions:
+        current_pred = dict(prediction)
+    print("Debug 5")
+    ##return f"Patient Hypotensive in 15 min prediction: {datetime.utcnow()}"
     #return f"Patient Hypotensive in 15 min prediction: {current_pred}"
     return f"Model scoring initiated at {datetime.utcnow()}"
 
