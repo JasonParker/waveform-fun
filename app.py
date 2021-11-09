@@ -62,19 +62,15 @@ def scoring_route_auto_ml():
                   'end_window': end_window_str,
                   'start_window':start_window_str}
     
-    print("Debug 3")
     predictions = predict_tabular_classification_sample(
         project="741350817607",
         endpoint_id="8317875832869617664",
         location="us-central1",instance_dict=pred_input)
     
-    print("Debug 4")
     for prediction in predictions:
         current_pred = dict(prediction)
-    print("Debug 5")
     ##return f"Patient Hypotensive in 15 min prediction: {datetime.utcnow()}"
-    #return f"Patient Hypotensive in 15 min prediction: {current_pred}"
-    return f"Model scoring initiated at {datetime.utcnow()}"
+    return f"Patient Hypotensive in 15 min prediction: {current_pred}"
 
 @application.route('/xgboost_score')
 def scoring_route_xgboost():
