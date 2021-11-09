@@ -12,5 +12,6 @@ task
 typing
 pytest
 xgboost
+gcsfs
 wfdb==3.4.1
 protobuf
