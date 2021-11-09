@@ -16,14 +16,13 @@ def get_sys_bp(df):
     only_sys : list of tuples
         Location and magnitudes of systolic blood pressures
     """
+    try:
+        vals = df.values[:,1]
+    except:
+        vals = df.values[:,0]
     #try:
-    #    vals = df.values[:,0]
-    #except:
-    #    vals = df.values[:,1]
-    #try:
     #    vals = df.values[:,1]
     #except:
-    vals = df.values
     peaks, _ = find_peaks(vals, height=0)
     max_values = [(i, v) for i, v in zip(df.index[peaks], vals[peaks])]
     only_sys = list()
@@ -54,7 +53,10 @@ def get_dias_bp(df):
     #    vals = df.values[:,0]
     #except:
     #    vals = df.values[:,1]
-    vals = df.values
+    try:
+        vals = df.values[:,1]
+    except:
+        vals = df.values[:,0]
     peaks, _ = find_peaks(1 / vals)
     max_values = [(i, v) for i, v in zip(df.index[peaks], vals[peaks])]
     only_dias = list()
