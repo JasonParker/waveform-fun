@@ -7,9 +7,10 @@ from google_cloud_pipeline_components import aiplatform as gcc_aip
 from kfp.v2 import compiler
 from kfp.v2.dsl import component
 from kfp.v2.google import experimental
-from task import main
+import task
 
 TIMESTAMP = datetime.now().strftime("%Y%m%d%H%M%S")
+os.environ["PROJECT_ID"] = "qwiklabs-gcp-04-133e595cc3fe"
 PROJECT = os.environ["PROJECT_ID"]
 BUCKET = "physionet_2009"
 PIPELINE_ROOT = f"gs://{BUCKET}/pipeline_root"
@@ -28,7 +29,7 @@ PYTHON_PACKAGE_EXECUTOR_IMAGE_URI = (
 SERVING_CONTAINER_IMAGE_URI = (
     "us-docker.pkg.dev/vertex-ai/prediction/tf2-cpu.2-3:latest"
 )
-PYTHON_MODULE = "task"
+PYTHON_MODULE = "waveform_fun.models.xgb_trainer.task"
 
 # Model and training hyperparameters
 # TODO: DO later
@@ -46,7 +47,6 @@ DATA_PATH = f"{GCS_PROJECT_PATH}/processed"
 @component
 def training_op(input1: str):
     print("VertexAI pipeline: {}".format(input1))
-    main()
 
 @kfp.dsl.pipeline(name="abp-xgb--train-upload-endpoint-deploy")
 def pipeline(
@@ -63,6 +63,9 @@ def pipeline(
                     "executor_image_uri": PYTHON_PACKAGE_EXECUTOR_IMAGE_URI,
                     "package_uris": [PYTHON_PACKAGE_URIS],
                     "python_module": PYTHON_MODULE,
+                    "args": [
+                        f"--output_dir={OUTDIR}",
+                    ]
                 },
                 "replica_count": f"{REPLICA_COUNT}",
                 "machineSpec": {

@@ -1,0 +1,310 @@
+{
+  "pipelineSpec": {
+    "components": {
+      "comp-endpoint-create": {
+        "executorLabel": "exec-endpoint-create",
+        "outputDefinitions": {
+          "artifacts": {
+            "endpoint": {
+              "artifactType": {
+                "schemaTitle": "system.Artifact",
+                "schemaVersion": "0.0.1"
+              }
+            }
+          }
+        }
+      },
+      "comp-model-deploy": {
+        "executorLabel": "exec-model-deploy",
+        "inputDefinitions": {
+          "artifacts": {
+            "endpoint": {
+              "artifactType": {
+                "schemaTitle": "system.Artifact",
+                "schemaVersion": "0.0.1"
+              }
+            },
+            "model": {
+              "artifactType": {
+                "schemaTitle": "system.Model",
+                "schemaVersion": "0.0.1"
+              }
+            }
+          }
+        },
+        "outputDefinitions": {
+          "artifacts": {
+            "endpoint": {
+              "artifactType": {
+                "schemaTitle": "system.Artifact",
+                "schemaVersion": "0.0.1"
+              }
+            }
+          }
+        }
+      },
+      "comp-model-upload": {
+        "executorLabel": "exec-model-upload",
+        "inputDefinitions": {
+          "parameters": {
+            "serving_container_environment_variables": {
+              "type": "STRING"
+            }
+          }
+        },
+        "outputDefinitions": {
+          "artifacts": {
+            "model": {
+              "artifactType": {
+                "schemaTitle": "system.Model",
+                "schemaVersion": "0.0.1"
+              }
+            }
+          }
+        }
+      },
+      "comp-training-op": {
+        "executorLabel": "exec-training-op",
+        "inputDefinitions": {
+          "parameters": {
+            "input1": {
+              "type": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "deploymentSpec": {
+      "executors": {
+        "exec-endpoint-create": {
+          "container": {
+            "args": [
+              "--method.project",
+              "qwiklabs-gcp-04-133e595cc3fe",
+              "--method.display_name",
+              "pipelines-EndpointCreate-20211103205744",
+              "--executor_input",
+              "{{$}}",
+              "--resource_name_output_artifact_uri",
+              "{{$.outputs.artifacts['endpoint'].uri}}"
+            ],
+            "command": [
+              "python3",
+              "-m",
+              "google_cloud_pipeline_components.aiplatform.remote_runner",
+              "--cls_name",
+              "Endpoint",
+              "--method_name",
+              "create"
+            ],
+            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:0.1.1"
+          }
+        },
+        "exec-model-deploy": {
+          "container": {
+            "args": [
+              "--init.project",
+              "qwiklabs-gcp-04-133e595cc3fe",
+              "--method.deployed_model_display_name",
+              "xgb_model_20211103205744",
+              "--method.machine_type",
+              "n1-standard-16",
+              "--executor_input",
+              "{{$}}",
+              "--resource_name_output_artifact_uri",
+              "{{$.outputs.artifacts['endpoint'].uri}}",
+              "--method.endpoint",
+              "{{$.inputs.artifacts['endpoint'].uri}}",
+              "--init.model_name",
+              "{{$.inputs.artifacts['model'].uri}}"
+            ],
+            "command": [
+              "python3",
+              "-m",
+              "google_cloud_pipeline_components.aiplatform.remote_runner",
+              "--cls_name",
+              "Model",
+              "--method_name",
+              "deploy"
+            ],
+            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:0.1.1"
+          }
+        },
+        "exec-model-upload": {
+          "container": {
+            "args": [
+              "--method.project",
+              "qwiklabs-gcp-04-133e595cc3fe",
+              "--method.display_name",
+              "pipelines-ModelUpload-20211103205744",
+              "--method.artifact_uri",
+              "gs://physionet_2009/models/trained_xgb_model_20211103205744/savedmodel",
+              "--method.serving_container_image_uri",
+              "us-docker.pkg.dev/vertex-ai/prediction/tf2-cpu.2-3:latest",
+              "--executor_input",
+              "{{$}}",
+              "--resource_name_output_artifact_uri",
+              "{{$.outputs.artifacts['model'].uri}}",
+              "--method.serving_container_environment_variables",
+              "{{$.inputs.parameters['serving_container_environment_variables']}}"
+            ],
+            "command": [
+              "python3",
+              "-m",
+              "google_cloud_pipeline_components.aiplatform.remote_runner",
+              "--cls_name",
+              "Model",
+              "--method_name",
+              "upload"
+            ],
+            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:0.1.1"
+          }
+        },
+        "exec-training-op": {
+          "customJob": {
+            "customJob": {
+              "displayName": "pipelines-train-20211103205744",
+              "jobSpec": {
+                "workerPoolSpecs": [
+                  {
+                    "machineSpec": {
+                      "machineType": "n1-standard-16"
+                    },
+                    "pythonPackageSpec": {
+                      "executor_image_uri": "us-docker.pkg.dev/vertex-ai/training/tf-cpu.2-3:latest",
+                      "package_uris": [
+                        "gs://physionet_2009/model_pkgs/waveform_fun-0.0.tar.gz"
+                      ],
+                      "python_module": "task"
+                    },
+                    "replica_count": "1"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "pipelineInfo": {
+      "name": "abp-xgb--train-upload-endpoint-deploy"
+    },
+    "root": {
+      "dag": {
+        "tasks": {
+          "endpoint-create": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-endpoint-create"
+            },
+            "taskInfo": {
+              "name": "endpoint-create"
+            }
+          },
+          "model-deploy": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-model-deploy"
+            },
+            "dependentTasks": [
+              "endpoint-create",
+              "model-upload"
+            ],
+            "inputs": {
+              "artifacts": {
+                "endpoint": {
+                  "taskOutputArtifact": {
+                    "outputArtifactKey": "endpoint",
+                    "producerTask": "endpoint-create"
+                  }
+                },
+                "model": {
+                  "taskOutputArtifact": {
+                    "outputArtifactKey": "model",
+                    "producerTask": "model-upload"
+                  }
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "model-deploy"
+            }
+          },
+          "model-upload": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-model-upload"
+            },
+            "dependentTasks": [
+              "training-op"
+            ],
+            "inputs": {
+              "parameters": {
+                "serving_container_environment_variables": {
+                  "runtimeValue": {
+                    "constantValue": {
+                      "stringValue": "{\"NOT_USED\": \"NO_VALUE\"}"
+                    }
+                  }
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "model-upload"
+            }
+          },
+          "training-op": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-training-op"
+            },
+            "inputs": {
+              "parameters": {
+                "input1": {
+                  "runtimeValue": {
+                    "constantValue": {
+                      "stringValue": "hypotension xgb training pipeline"
+                    }
+                  }
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "training-op"
+            }
+          }
+        }
+      },
+      "inputDefinitions": {
+        "parameters": {
+          "model_display_name": {
+            "type": "STRING"
+          },
+          "project": {
+            "type": "STRING"
+          }
+        }
+      }
+    },
+    "schemaVersion": "2.0.0",
+    "sdkVersion": "kfp-1.8.8"
+  },
+  "runtimeConfig": {
+    "parameters": {
+      "model_display_name": {
+        "stringValue": "xgb_model_20211103205744"
+      },
+      "project": {
+        "stringValue": "qwiklabs-gcp-04-133e595cc3fe"
+      }
+    }
+  }
+}
