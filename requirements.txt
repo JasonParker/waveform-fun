@@ -11,5 +11,6 @@ scikit-learn==1.0
 task
 typing
 pytest
+xgboost
 wfdb==3.4.1
 protobuf
