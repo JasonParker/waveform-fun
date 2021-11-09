@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy import find_peaks
+from scipy.signal import find_peaks
 
 
 def get_sys_bp(df):
@@ -16,10 +16,14 @@ def get_sys_bp(df):
     only_sys : list of tuples
         Location and magnitudes of systolic blood pressures
     """
-    try:
-        vals = df.values[:,0]
-    except:
-        vals = df.values[:,1]
+    #try:
+    #    vals = df.values[:,0]
+    #except:
+    #    vals = df.values[:,1]
+    #try:
+    #    vals = df.values[:,1]
+    #except:
+    vals = df.values
     peaks, _ = find_peaks(vals, height=0)
     max_values = [(i, v) for i, v in zip(df.index[peaks], vals[peaks])]
     only_sys = list()
@@ -46,19 +50,20 @@ def get_dias_bp(df):
     only_dias : list of tuples
         Location and magnitudes of systolic blood pressures
     """
-    try:
-        vals = df.values[:,0]
-    except:
-        vals = df.values[:,1]
+    #try:
+    #    vals = df.values[:,0]
+    #except:
+    #    vals = df.values[:,1]
+    vals = df.values
     peaks, _ = find_peaks(1 / vals)
     max_values = [(i, v) for i, v in zip(df.index[peaks], vals[peaks])]
     only_dias = list()
     i = 0
     while (i+1) < len(max_values):
         if max_values[i][1] < max_values[i+1][1]:
-            only_dias.append(max_values[i])
-        else:
             only_dias.append(max_values[i+1])
+        else:
+            only_dias.append(max_values[i])
         i += 2
         
     return only_dias

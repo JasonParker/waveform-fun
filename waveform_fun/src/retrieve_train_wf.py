@@ -2,34 +2,34 @@ import requests
 import pandas as pd
 import json
 import os
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 from google.cloud import storage
 
 
-def get_url_paths(url, ext='', params={}):
-    """https://www.codegrepper.com/code-examples/python/list+all+the+directory+in+a+website+using+python"""
-    response = requests.get(url, params=params)
-    if response.ok:
-        response_text = response.text
-    else:
-        return response.raise_for_status()
-    soup = BeautifulSoup(response_text, 'html.parser')
-    parent = [url + node.get('href') for node in soup.find_all('a') if node.get('href').endswith(ext)]
-    return parent
-
-def fetch_waveforms_for_patient(waveform_id):
-    path = f'https://archive.physionet.org/pn5/mimic2db/{waveform_id}/'
-    target_path = 'data/train_wave/'
-    hea_urls = get_url_paths(path, ext="hea")
-    dat_urls = get_url_paths(path, ext="dat")
-    alarms_urls = get_url_paths(path, ext="alarms")
-    urls = hea_urls + dat_urls + alarms_urls
-    for url in urls:
-        url_target = target_path + url.split('/')[-1]
-        response = requests.get(url, stream=True)
-        with open(url_target, 'wb') as f:
-            #f.write(response.raw.read())
-            f.write(response.content)
+#def get_url_paths(url, ext='', params={}):
+#    """https://www.codegrepper.com/code-examples/python/list+all+the+directory+in+a+website+using+python"""
+#    response = requests.get(url, params=params)
+#    if response.ok:
+#        response_text = response.text
+#    else:
+#        return response.raise_for_status()
+#    soup = BeautifulSoup(response_text, 'html.parser')
+#    parent = [url + node.get('href') for node in soup.find_all('a') if node.get('href').endswith(ext)]
+#    return parent
+#
+#def fetch_waveforms_for_patient(waveform_id):
+#    path = f'https://archive.physionet.org/pn5/mimic2db/{waveform_id}/'
+#    target_path = 'data/train_wave/'
+#    hea_urls = get_url_paths(path, ext="hea")
+#    dat_urls = get_url_paths(path, ext="dat")
+#    alarms_urls = get_url_paths(path, ext="alarms")
+#    urls = hea_urls + dat_urls + alarms_urls
+#    for url in urls:
+#        url_target = target_path + url.split('/')[-1]
+#        response = requests.get(url, stream=True)
+#        with open(url_target, 'wb') as f:
+#            #f.write(response.raw.read())
+#            f.write(response.content)
 
 def get_training_labels():
     training = {
