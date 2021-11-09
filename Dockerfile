@@ -35,4 +35,7 @@ COPY / /
 # Install production dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "app.py" ]
+ARG GIT_HASH
+ENV GIT_HASH=${GIT_HASH:-dev}
+
+CMD ["python3", "app.py" ]
