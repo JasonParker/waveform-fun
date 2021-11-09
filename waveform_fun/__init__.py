@@ -3,3 +3,4 @@ from waveform_fun import src
 from waveform_fun.src import data
 from waveform_fun.models import xgb_trainer
 from waveform_fun.models.xgb_trainer import *
+from waveform_fun.models.xgb_trainer.task import *

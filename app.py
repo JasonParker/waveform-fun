@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import Flask, abort, redirect, request
 import os
 
+from waveform.src.models.xgboost import task
 from src.utils.predict_tabular_data import predict_tabular_classification_sample,predict_custom_trained_model_sample
 
 application = Flask(__name__)
@@ -18,13 +19,14 @@ def ping_page():
 
 
 @application.route('/train')
-def training_route():
+def xgb_training_route():
     """Route to initiate model training"""
     ## TODO: Connect this with modeling pipeline code
     ##       Maybe you want to use a thread or similar to enable
     ##       sending a success response to the requester immediately
     ##       rather than waiting for the entire training pipeline to run.
-    return f"Model training initiated at {datetime.utcnow()}"
+    task()
+    return f"XGBoost model training initiated at {datetime.utcnow()}"
 
 
 @application.route('/score')
@@ -45,13 +47,13 @@ def scoring_route_auto_ml():
     #       2. Generate a prediction
     #       3. Respond with a JSON object including the original
     #          data and the prediction
-    print("It started")
-    sys_BP = request.args.get('sysBP',type=float)
-    dias_BP = request.args.get('diasBP',type=float)
-    map_BP = (sys_BP + 2 * dias_BP) / 3
-    end_window_str = str(0)
-    #print(type(end_window_str))
-    start_window_str = str(0)
+    #print("It started")
+    #sys_BP = request.args.get('sysBP', type=float)
+    #dias_BP = request.args.get('diasBP', type=float)
+    #map_BP = (sys_BP + 2 * dias_BP) / 3
+    #end_window_str = str(0)
+    ##print(type(end_window_str))
+    #start_window_str = str(0)
     #print(type(start_window_str))
     #print("Debug 2")
     #

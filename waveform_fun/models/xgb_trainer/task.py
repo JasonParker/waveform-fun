@@ -5,6 +5,13 @@ import os
 
 from waveform_fun.models.xgb_trainer import model
 
+def train():
+    BUCKET = "physionet_2009"
+    TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    output_dir = f"gs://{BUCKET}/models/trained_xgb_model_{TIMESTAMP}"
+    xgb = model.build_xgboost_model()
+    trained, predictions = model.train_and_evaluate(xgb, output_dir)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
