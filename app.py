@@ -48,7 +48,7 @@ def scoring_route_auto_ml():
     #       3. Respond with a JSON object including the original
     #          data and the prediction
     #print("It started")
-    #sys_BP = request.args.get('sysBP', type=float)
+    sys_BP = request.args.get('sysBP', type=float)
     #dias_BP = request.args.get('diasBP', type=float)
     #map_BP = (sys_BP + 2 * dias_BP) / 3
     #end_window_str = str(0)
@@ -110,6 +110,7 @@ def scoring_route_xgboost():
 
 
 if __name__ == "__main__":
+    application.debug=True
     application.run(
         threaded=True,
         host='0.0.0.0',

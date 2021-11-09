@@ -15,3 +15,7 @@ print(resp.content.decode())
 # Get AutoML Scores
 resp = requests.get(f"{url}/automl_score", verify=False)
 print(resp.content.decode())
+
+# Get train_xgb_model
+resp = requests.get(f"{url}/train", verify=False)
+print(resp.content.decode())
