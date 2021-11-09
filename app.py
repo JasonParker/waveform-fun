@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import Flask, abort, redirect, request
 import os
 
-from waveform.src.models.xgboost import task
+from waveform_fun.models.xgb_trainer.task import train
 from src.utils.predict_tabular_data import predict_tabular_classification_sample,predict_custom_trained_model_sample
 
 application = Flask(__name__)
@@ -25,7 +25,7 @@ def xgb_training_route():
     ##       Maybe you want to use a thread or similar to enable
     ##       sending a success response to the requester immediately
     ##       rather than waiting for the entire training pipeline to run.
-    task()
+    train()
     return f"XGBoost model training initiated at {datetime.utcnow()}"
 
 
