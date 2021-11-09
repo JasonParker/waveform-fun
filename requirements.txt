@@ -10,5 +10,6 @@ schedule
 scikit-learn==1.0
 task
 typing
+pytest
 wfdb==3.4.1
 protobuf
