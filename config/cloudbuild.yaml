@@ -2,5 +2,9 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '--build-arg', 'GIT_HASH=${GIT_HASH::7}', '-t', 'gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun', '.']
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun:${GIT_HASH}']
-
+  args: ['push', 'gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun:v0.0.0']
+# Deploy an image from Container Registry to Cloud Run
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['beta', 'run', 'deploy', 'waveform-fun', '--image', 'gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun:v0.0.0', '--region', 'us-central1', '--allow-unauthenticated']
+images:
+ - 'gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun'
