@@ -75,6 +75,7 @@ def scoring_route_auto_ml():
     #print("Debug 5")
     ###return f"Patient Hypotensive in 15 min prediction: {datetime.utcnow()}"
     #return f"Patient Hypotensive in 15 min prediction: {current_pred}"
+    return f"Model scoring initiated at {datetime.utcnow()}"
 
 @application.route('/xgboost_score')
 def scoring_route_xgboost():
