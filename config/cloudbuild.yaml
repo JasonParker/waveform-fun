@@ -2,5 +2,5 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '--build-arg', 'GIT_HASH=${GIT_HASH::7}', '-t', 'gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun', '.']
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun']
+  args: ['push', 'gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun:${GIT_HASH}']
 
