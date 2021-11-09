@@ -6,9 +6,13 @@ from src.utils.predict_tabular_data import predict_tabular_classification_sample
 
 application = Flask(__name__)
 
+@application.route('/')
+def home_page():
+    """Health check route to ensure app is running."""
+    return "hello world", 201, {'Content-type':'text/html'}
 
 @application.route('/ping')
-def home_page():
+def ping_page():
     """Health check route to ensure app is running."""
     return "pong", 201, {'Content-type':'text/html'}
 
