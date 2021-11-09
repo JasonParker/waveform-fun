@@ -13,6 +13,7 @@ steps:
     - '-c'
     - |
        pip3 install -r requirements.txt
+       pip3 install -e .
        python3 -m pytest
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/qwiklabs-gcp-04-133e595cc3fe/waveform-fun:v0.0.0']
