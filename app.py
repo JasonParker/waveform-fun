@@ -95,7 +95,7 @@ def scoring_route_xgboost():
     
     predictions = predict_custom_trained_model_sample(
     project="741350817607",
-    endpoint_id="187048918117253120",
+    endpoint_id="3560245039017754624",
         location="us-central1", instance_dict=pred_input)
     
     for prediction in predictions:
