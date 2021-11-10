@@ -80,7 +80,7 @@ def scoring_route_xgboost():
     ##       2. Generate a prediction
     ##       3. Respond with a JSON object including the original
     ##          data and the prediction
-    json_data = request.json()
+    json_data = request.json
     
     predictions = predict_custom_trained_model_sample(
     project="741350817607",
