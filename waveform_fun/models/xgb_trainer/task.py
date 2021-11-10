@@ -10,7 +10,8 @@ def train():
     TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     output_dir = f"gs://{BUCKET}/models/trained_xgb_model_{TIMESTAMP}"
     xgb = model.build_xgboost_model()
-    trained, predictions = model.train_and_evaluate(xgb, output_dir)
+    #trained, predictions = model.train_and_evaluate(xgb, output_dir)
+    model.train_and_evaluate(xgb, output_dir)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -35,4 +36,5 @@ if __name__ == "__main__":
         hparams["output_dir"] = f"gs://{BUCKET}/models/trained_xgb_model_{TIMESTAMP}"
     print("output_dir", hparams["output_dir"])
     xgb = model.build_xgboost_model()
-    trained, predictions = model.train_and_evaluate(xgb, hparams["output_dir"])
+    #trained, predictions = model.train_and_evaluate(xgb, hparams["output_dir"])
+    model.train_and_evaluate(xgb, hparams["output_dir"])

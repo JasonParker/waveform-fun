@@ -7,11 +7,11 @@ np
 pandas
 requests
 schedule
-scikit-learn==1.0
+scikit-learn==0.24.0
 task
 typing
 pytest
-xgboost
+xgboost==1.3.1
 gcsfs
 wfdb==3.4.1
 protobuf

@@ -1,5 +1,6 @@
 from pkg_resources import resource_filename
 import os
+import numpy as np
 
 def get_fn(filename):
     """Get the full path to one of the reference files shipped for utils.
@@ -19,3 +20,14 @@ def get_fn(filename):
     if not os.path.exists(fn):
         raise IOError('Sorry! {} does not exists.'.format(fn))
     return fn
+
+def df_to_json(df):
+    """Format dataframe of data into json for xgboost/sklearn predictions"""
+    data = []
+    for i in range(len(subset)):
+      data.append([])
+      for col in subset.columns:
+        # convert from numpy integers to standard integers
+        data[i].append(int(np.uint64(subset[col][i]).item()))
+
+    return data
