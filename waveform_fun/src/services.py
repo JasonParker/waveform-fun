@@ -32,10 +32,16 @@ def get_xgb_scores():
     df2 = df.iloc[:100]
     df2 = df2.drop(columns=["Unnamed: 0"])
     to_json = df_to_json(df2)
-    json_data = json.dumps({"instances": to_json})
-    import pdb; pdb.set_trace()
-    resp = requests.get(f"{url}/xgboost_score", json=json_data, verify=False)
-    import pdb; pdb.set_trace()
+    #json_data = json.dumps({"instances": to_json})
+    json_data = {"instances": to_json}
+    headers = {
+    "content-type": "application/json",
+    }
+    
+    params = (
+        ("priority", "normal"),
+    )
+    resp = requests.post(f"{url}/xgboost_score", json=json_data)
     print(resp.content.decode())
 
 # Get train_xgb_model

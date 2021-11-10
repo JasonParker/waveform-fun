@@ -82,15 +82,14 @@ def scoring_route_xgboost():
     ##          data and the prediction
     json_data = request.json["instances"]
     
-    predictions = predict_xgb_classification_sample(
-    project="741350817607",
-    endpoint_id="3560245039017754624",
-        location="us-central1", instance_dict=json_data)
-    
-    for prediction in predictions:
-        current_pred = prediction
+    probas = predict_xgb_classification_sample(
+        project="741350817607",
+        endpoint_id="3560245039017754624",
+            location="us-central1", instance_dict=json_data)
 
-    return f"Patient Hypotensive in 15 min prediction: {current_pred}"
+    predictions = [1 if x > 0.5 else 0 for x in probas]
+    
+    return f"Patient Hypotensive in 15 min predictions: {predictions}"
 
 
 if __name__ == "__main__":
