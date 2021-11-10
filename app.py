@@ -82,7 +82,7 @@ def scoring_route_xgboost():
     ##          data and the prediction
     json_data = request.json["instances"]
     
-    predictions = predict_custom_trained_model_sample(
+    predictions = predict_xgb_classification_sample(
     project="741350817607",
     endpoint_id="3560245039017754624",
         location="us-central1", instance_dict=json_data)
