@@ -110,7 +110,7 @@ def load_dataset():
     #        )
     # Copy file from bucket
     os.system(f'gsutil cp gs://{bucket_name}/processed/processed_all.csv .')
-    os.system("ls ")
+    print(os.system("ls "))
     df = pd.read_csv("processed_all.csv")
     df = df.drop(columns=["Unnamed: 0", "Unnamed: 0.1"])
     # Drop instances where patient is hypotensive and then isn't later on
