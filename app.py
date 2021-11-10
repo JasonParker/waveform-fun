@@ -3,7 +3,7 @@ from flask import Flask, abort, redirect, request
 import os
 
 from waveform_fun.models.xgb_trainer.task import train
-from src.utils.predict_tabular_data import predict_tabular_classification_sample,predict_custom_trained_model_sample
+from src.utils.predict_tabular_data import predict_tabular_classification_sample, predict_custom_trained_model_sample, predict_xgb_classification_sample
 
 application = Flask(__name__)
 
@@ -72,7 +72,7 @@ def scoring_route_auto_ml():
     ##return f"Patient Hypotensive in 15 min prediction: {datetime.utcnow()}"
     return f"Patient Hypotensive in 15 min prediction: {current_pred}"
 
-@application.route('/xgboost_score')
+@application.route('/xgboost_score', methods=["GET", "POST"])
 def scoring_route_xgboost():
     """Route to generate a prediction"""
     ## TODO: Stand up a function on this route that will:
@@ -80,18 +80,7 @@ def scoring_route_xgboost():
     ##       2. Generate a prediction
     ##       3. Respond with a JSON object including the original
     ##          data and the prediction
-    sys_BP = request.args.get('sysBP',type=float)
-    dias_BP = request.args.get('diasBP',type=float)
-    map_BP = (sys_BP + 2 * dias_BP) / 3
-    end_window_str = str(0)
-    #print(type(end_window_str))
-    start_window_str = str(0)
-    #print(type(start_window_str))
-    
-    pred_input = {'avg_sys':sys_BP,
-                  'avg_map':map_BP,
-                  'avg_dias':dias_BP}
-
+    json_data = flask.request.json
     
     predictions = predict_custom_trained_model_sample(
     project="741350817607",
@@ -99,8 +88,8 @@ def scoring_route_xgboost():
         location="us-central1", instance_dict=pred_input)
     
     for prediction in predictions:
-        current_pred = dict(prediction)
-    ##return f"Patient Hypotensive in 15 min prediction: {datetime.utcnow()}"
+        current_pred = prediction
+
     return f"Patient Hypotensive in 15 min prediction: {current_pred}"
 
 

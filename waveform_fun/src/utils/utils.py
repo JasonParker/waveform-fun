@@ -24,10 +24,10 @@ def get_fn(filename):
 def df_to_json(df):
     """Format dataframe of data into json for xgboost/sklearn predictions"""
     data = []
-    for i in range(len(subset)):
+    for i in range(len(df)):
       data.append([])
-      for col in subset.columns:
+      for col in df.columns:
         # convert from numpy integers to standard integers
-        data[i].append(int(np.uint64(subset[col][i]).item()))
+        data[i].append(int(np.uint64(df[col][i]).item()))
 
     return data

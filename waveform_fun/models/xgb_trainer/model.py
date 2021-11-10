@@ -1,4 +1,5 @@
 from xgboost import XGBClassifier
+import xgboost as xgb
 from waveform_fun.src.utils.get_labels import get_training_labels
 from waveform_fun.src.retrieve_train_wf import upload_blob
 import datetime
@@ -90,36 +91,62 @@ def train_and_evaluate(model, output_dir):
     # Load and process data
     X_train, y_train, X_test, y_test, X_valid, y_valid = preprocessing.process_data()
 
-    # Train model
-    xgb_pipeline, xgb_pipeline_predictions = run_pipeline(model,
-                                                      X_train,
-                                                      y_train,
-                                                      X_valid,
-                                                      y_valid,
-                                                      verbose=False)
-    print(xgb_pipeline_predictions)
+    # Copy test data over to bucket
+    testing_path = "gs://physionet_2009/processed"
+    X_test.to_csv("x_test.csv")
+    np.savetxt("y_test.csv", y_test, delimiter=",")
+    os.system(f'gsutil cp x_test.csv {testing_path}/')
+    os.system(f'gsutil cp y_test.csv {testing_path}/')
 
-    # Save model locally
-    now = datetime.datetime.now()
-    date, time= str(now).split(" ")
-    #model.save_model(f"xgb_files/xgbmodel_{date}_{time}.json")
-    #model.save_model(f"waveform_fun/models/xgb_trainer/xgb_files/xgbmodel_{date}_{time}.json")
-    # Save as json
-    model.save_model("model.json")
-    # Save as pkl
-    #with open('xgbmodel_{date}_{time}.pkl', 'wb') as model_file:
+    # Train model
+    #xgb_pipeline, xgb_pipeline_predictions = run_pipeline(model,
+    #                                                  X_train,
+    #                                                  y_train,
+    #                                                  X_valid,
+    #                                                  y_valid,
+    #                                                  verbose=False)
+    #print(xgb_pipeline_predictions)
+    y_train = y_train.reshape((y_train.size,))
+    dX_train = xgb.DMatrix(X_train, label=y_train)
+
+    # Train xgb model
+    params = {
+    'objective':'binary:logistic',
+    'eval_metric':['auc', 'error'],
+    'max_depth': 3,
+    'learning_rate': 0.1
+    }
+    bst = xgb.train(params, dX_train, 10)
+
+    # Save model
+    bst.save_model("model.bst")
+
+    ## Save model locally
+    #now = datetime.datetime.now()
+    #date, time= str(now).split(" ")
+    ##model.save_model(f"xgb_files/xgbmodel_{date}_{time}.json")
+    ##model.save_model(f"waveform_fun/models/xgb_trainer/xgb_files/xgbmodel_{date}_{time}.json")
+    ## Save as json
+    #model.save_model("model.json")
+    ## Save as pkl
+    #with open('model.pkl', 'wb') as model_file:
     #    pickle.dump(model, model_file)
-    joblib.dump(model, "model.joblib")
+    ## Save as joblib
+    #joblib.dump(model, "model.joblib")
 
     # Write to a bucket
     #upload_blob(BUCKET, f"xgbmodel_{date}_{time}.json", model_export_path) 
     json_file = "model.json"
     pkl_file = "model.pkl"
     joblib_file = "model.joblib"
-    os.system(f'gsutil cp {json_file} {model_export_path}/')
-    os.system(f'gsutil cp {joblib_file} {model_export_path}/')
+    bst_file = "model.bst"
 
-    return xgb_pipeline, xgb_pipeline_predictions
+    #os.system(f'gsutil cp {json_file} {model_export_path}/')
+    #os.system(f'gsutil cp {joblib_file} {model_export_path}/')
+    #os.system(f'gsutil cp {pkl_file} {model_export_path}/')
+    os.system(f'gsutil cp {bst_file} {model_export_path}/')
+
+    #return xgb_pipeline, xgb_pipeline_predictions
 
 #hpt = hypertune.HyperTune()
 
